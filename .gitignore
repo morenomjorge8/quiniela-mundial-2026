@@ -1,0 +1,30 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Outputs generados (la web pública vive en docs/ y SÍ se versiona)
+reports/output/
+
+# Datos operativos (se llenan al correr cada jornada)
+data/respuestas/
+data/historial_resultados.json
+data/historial_h2h.json
+
+# Excel local con datos sensibles (incluye teléfonos de los participantes) — NO publicar
+*.xlsx
+
+# Fotos reales de referencia (privacidad) — NO publicar. Las caricaturas PNG sí se versionan.
+Caricaturas/PENDING/
+
+# Config local de la herramienta
+.claude/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
