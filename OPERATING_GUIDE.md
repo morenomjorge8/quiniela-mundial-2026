@@ -217,3 +217,29 @@ Genera el HTML de la J1 con predicciones inventadas y lo abre en el navegador.
   eliminatoria; extender `correr_jornada` para jornadas ≥ 7.
 
 Al hacer cualquier cambio, correr `py -m pytest tests/` antes de operar la jornada real.
+
+---
+
+## 10. Sitio web (GitHub Pages)
+
+La web pública vive en `docs/` y la sirve GitHub Pages desde la rama `main`, carpeta `/docs`.
+
+- **Portada** `docs/index.html`: tabla general acumulada + navegación de jornadas + botón
+  para llenar el form de la próxima jornada. Se reconstruye sola al correr una jornada real
+  (`py reports/generar_reporte.py N`), o a mano con:
+  ```powershell
+  py reports/generar_reporte.py sitio
+  ```
+- **Detalle por jornada** `docs/jornada_N.html`: lo genera `generar_reporte.py N`.
+
+### Publicar / actualizar la web
+Después de generar (al cerrar cada jornada):
+```powershell
+git add docs/
+git commit -m "Jornada N: actualiza tabla y resultados"
+git push
+```
+GitHub Pages republica en ~1 min. URL: `https://morenomjorge8.github.io/quiniela-mundial-2026/`
+
+> ⚠️ Privacidad: el `.gitignore` excluye `*.xlsx` (tienen teléfonos) y `Caricaturas/PENDING/`
+> (fotos reales). La web solo muestra apodos, puntos y caricaturas. No quites esas reglas.
