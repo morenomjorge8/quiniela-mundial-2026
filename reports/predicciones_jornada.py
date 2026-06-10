@@ -70,16 +70,32 @@ _CSS = """
   .chip-name{font-size:.72rem;font-weight:700;color:var(--txt);white-space:nowrap;}
   .empty{color:var(--gris);font-size:.8rem;text-align:center;padding:6px 0;}
 
+  .sec-title{font-size:.72rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+             color:var(--cyan);margin:18px 2px 10px;}
+  .bonus-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .bonus-card{background:var(--card);border:1px solid var(--border);border-radius:12px;
+              padding:12px 12px 6px;page-break-inside:avoid;break-inside:avoid;}
+  .bonus-head{font-size:.92rem;font-weight:800;color:var(--txt);margin-bottom:10px;
+              padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .bonus-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);}
+  .bonus-row:last-child{border-bottom:none;}
+  .bval{flex-shrink:0;min-width:34px;text-align:center;font-weight:900;font-size:1.05rem;
+        background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:5px 6px;}
+  .bonus-rojas .bval{color:var(--rojo);}
+  .bonus-pen .bval{color:var(--cyan);}
+  @media(max-width:600px){.bonus-grid{grid-template-columns:1fr;}}
+
   .foot{text-align:center;color:var(--gris);font-size:.72rem;padding:10px;}
 
   @media print{
     @page{size:A4;margin:10mm;}
     body{background:#fff;}
     .hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .match{background:#fff;border:1px solid #ccc;}
+    .match,.bonus-card{background:#fff;border:1px solid #ccc;}
     .col{background:#f6f8fb;}
     .chip{background:#eef2f8;}
-    .chip-name,.match-head{color:#111;}
+    .bval{background:#f6f8fb;}
+    .chip-name,.match-head,.bonus-head{color:#111;}
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
 """
@@ -100,9 +116,8 @@ def _chip(nombre, imagenes):
     return f'<div class="chip">{av}<span class="chip-name">{nombre}</span></div>'
 
 
-def _estilos_avatares(predicciones, imagenes):
+def _estilos_avatares(nombres, imagenes):
     """Una regla CSS por persona (imagen embebida 1 sola vez)."""
-    nombres = {p.participante for p in predicciones}
     reglas = ''
     for nombre in sorted(nombres):
         url = _imagen_para(nombre, imagenes)
@@ -120,6 +135,44 @@ def _columna(titulo, clase, nombres, imagenes):
     return f'<div class="col {clase}"><div class="col-h">{titulo}</div>{chips}</div>'
 
 
+def _grupo_por_valor(bonus, attr):
+    """{valor_predicho: [nombres]} ordenado por valor."""
+    d = {}
+    for b in bonus:
+        d.setdefault(getattr(b, attr), []).append(b.participante)
+    return dict(sorted(d.items()))
+
+
+def _bonus_filas(grupos, imagenes):
+    if not grupos:
+        return '<div class="empty">Sin respuestas</div>'
+    filas = ''
+    for valor, nombres in grupos.items():
+        chips = ''.join(_chip(n, imagenes) for n in sorted(nombres, key=str.lower))
+        filas += (f'<div class="bonus-row"><span class="bval">{valor}</span>'
+                  f'<div class="chips">{chips}</div></div>')
+    return filas
+
+
+def _seccion_bonos(bonus, imagenes):
+    if not bonus:
+        return ''
+    rojas = _bonus_filas(_grupo_por_valor(bonus, 'total_rojas'), imagenes)
+    penales = _bonus_filas(_grupo_por_valor(bonus, 'total_penales'), imagenes)
+    return f"""
+    <div class="sec-title">Bonos de la jornada (+2 c/u)</div>
+    <div class="bonus-grid">
+      <div class="bonus-card bonus-rojas">
+        <div class="bonus-head">🟥 Total de tarjetas rojas</div>
+        {rojas}
+      </div>
+      <div class="bonus-card bonus-pen">
+        <div class="bonus-head">🎯 Total de penales de falta</div>
+        {penales}
+      </div>
+    </div>"""
+
+
 def _agrupar(predicciones):
     """{num_partido: {Resultado: [nombres en orden]}}."""
     por_partido = {}
@@ -130,7 +183,7 @@ def _agrupar(predicciones):
     return por_partido
 
 
-def construir_html(jornada, partidos, predicciones, imagenes):
+def construir_html(jornada, partidos, predicciones, bonus, imagenes):
     por_partido = _agrupar(predicciones)
     n_participantes = len({p.participante for p in predicciones})
 
@@ -149,8 +202,10 @@ def construir_html(jornada, partidos, predicciones, imagenes):
       <div class="cols">{cols}</div>
     </div>"""
 
+    seccion_bonos = _seccion_bonos(bonus, imagenes)
     fechas = JORNADA_META.get(jornada, {}).get('fechas', '')
-    estilos_av = _estilos_avatares(predicciones, imagenes)
+    nombres = {p.participante for p in predicciones} | {b.participante for b in bonus}
+    estilos_av = _estilos_avatares(nombres, imagenes)
     return f"""<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -161,19 +216,23 @@ def construir_html(jornada, partidos, predicciones, imagenes):
   <div class="hdr-title">Predicciones · Jornada {jornada}</div>
   <div class="hdr-sub">Quién eligió qué · {n_participantes} participantes{(' · ' + fechas) if fechas else ''}</div>
 </header>
-<div class="wrap">{bloques}
+<div class="wrap">
+  <div class="sec-title">Partidos</div>
+  {bloques}
+  {seccion_bonos}
 </div>
 <div class="foot">Quiniela Mundial 2026 — Jornada {jornada}</div>
 </body></html>"""
 
 
-def generar(jornada, predicciones_override=None):
+def generar(jornada, predicciones_override=None, bonus_override=None):
     partidos = [p for p in cargar_calendario() if p.jornada == jornada]
     if not partidos:
         raise SystemExit(f"No hay partidos para la jornada {jornada} en el calendario.")
 
     if predicciones_override is not None:
         predicciones = predicciones_override
+        bonus = bonus_override or []
     else:
         csv_path = os.path.join(
             os.path.dirname(__file__), '..', 'data', 'respuestas', f'jornada_{jornada}.csv'
@@ -184,10 +243,10 @@ def generar(jornada, predicciones_override=None):
                 f"Exporta las respuestas del form de la J{jornada} a CSV y guárdalas ahí "
                 f"(o corre con 'sim' para una prueba)."
             )
-        predicciones, _ = cargar_respuestas(jornada, csv_path)
+        predicciones, bonus = cargar_respuestas(jornada, csv_path)
 
     imagenes = _cargar_imagenes()
-    html = construir_html(jornada, partidos, predicciones, imagenes)
+    html = construir_html(jornada, partidos, predicciones, bonus, imagenes)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     ruta = os.path.join(OUTPUT_DIR, f'predicciones_jornada_{jornada}.html')
@@ -200,13 +259,14 @@ if __name__ == '__main__':
     jornada = int(sys.argv[1]) if len(sys.argv) > 1 else 1
     usar_sim = len(sys.argv) > 2 and sys.argv[2] == 'sim'
 
-    override = None
+    override_preds = override_bonus = None
     if usar_sim:
         from tests.simular_jornada import datos_simulados_jornada
         sim = datos_simulados_jornada(jornada)
-        override = sim['predicciones']
+        override_preds = sim['predicciones']
+        override_bonus = sim['bonus_preds']
 
-    ruta = generar(jornada, predicciones_override=override)
+    ruta = generar(jornada, predicciones_override=override_preds, bonus_override=override_bonus)
     print(f'Hoja de predicciones generada: {ruta}')
     print('Para PDF: ábrela y Ctrl+P → "Guardar como PDF" (activa Gráficos de fondo).')
     webbrowser.open(f'file:///{ruta.replace(os.sep, "/")}')
