@@ -18,6 +18,18 @@ from quiniela.standings import CLASIFICAN
 # docs/jornada_N.html y reconstruye docs/index.html (la tabla general).
 OUTPUT_DIR      = os.path.join(os.path.dirname(__file__), '..', 'docs')
 CARICATURAS_DIR = os.path.join(os.path.dirname(__file__), '..', 'Caricaturas')
+# Quién ya envió el form de cada jornada: { "1": ["George", ...] }. Solo nombres
+# (sin predicciones); se edita a mano conforme la gente va llenando el form.
+ENTREGAS_PATH   = os.path.join(os.path.dirname(__file__), '..', 'data', 'entregas.json')
+
+
+def _cargar_entregas() -> dict:
+    """Devuelve {jornada(str): [nombres]} de quienes ya enviaron el form."""
+    import json
+    if not os.path.exists(ENTREGAS_PATH):
+        return {}
+    with open(ENTREGAS_PATH, 'r', encoding='utf-8') as f:
+        return json.load(f)
 
 JORNADA_META = {
     1: {'fechas': '11–14 junio 2026', 'form_url': 'https://docs.google.com/forms/d/e/1FAIpQLSc4-RPizFfBoJ4J-VWumdoV114d7gU2kHBbpkfmDx7HkJ5Gwg/viewform?usp=sharing&ouid=113079264479944386424'},
@@ -424,6 +436,27 @@ _CSS_SITIO = """
     background: var(--card2); color: var(--cyan); font-weight: 800; font-size: 1rem;
   }
   .part-name { font-size: 0.8rem; font-weight: 700; color: var(--txt); text-align: center; }
+  .part-sub {
+    font-size: 0.74rem; color: var(--verde); font-weight: 700;
+    margin: -4px 0 12px;
+  }
+  /* Marca de "ya envió el form" */
+  .part-card.entregado {
+    border-color: rgba(46,213,115,0.55);
+    background: linear-gradient(180deg, rgba(46,213,115,0.12), rgba(46,213,115,0.04));
+    box-shadow: 0 0 0 1px rgba(46,213,115,0.25) inset;
+  }
+  .part-card.entregado .part-av { border-color: var(--verde); }
+  .part-badge {
+    font-size: 0.58rem; font-weight: 800; letter-spacing: 0.3px;
+    color: var(--verde); background: rgba(46,213,115,0.14);
+    border: 1px solid rgba(46,213,115,0.4);
+    border-radius: 20px; padding: 2px 8px; white-space: nowrap;
+  }
+  .part-badge.pend {
+    color: var(--gris); background: var(--bg2);
+    border-color: var(--border);
+  }
   @media (max-width: 420px) { .part-grid { grid-template-columns: repeat(2, 1fr); } }
 """
 
@@ -776,7 +809,8 @@ def _section_reglas():
 </div>"""
 
 
-def _section_participantes(participantes, imagenes):
+def _section_participantes(participantes, imagenes, entregados=None, jornada=None):
+    entregados = entregados or set()
     cards = ''
     for p in sorted(participantes, key=lambda x: x.nombre.lower()):
         url = _imagen_para(p.nombre, imagenes)
@@ -785,14 +819,27 @@ def _section_participantes(participantes, imagenes):
         else:
             iniciales = ''.join(w[0] for w in p.nombre.split()[:2]).upper()
             av = f'<div class="part-av part-ph">{iniciales}</div>'
+        if p.nombre in entregados:
+            extra = ' entregado'
+            badge = f'<span class="part-badge">✓ Jornada {jornada}</span>'
+        else:
+            extra = ''
+            badge = '<span class="part-badge pend">Pendiente</span>' if jornada else ''
         cards += f"""
-      <div class="part-card">
+      <div class="part-card{extra}">
         {av}
         <span class="part-name">{p.nombre}</span>
+        {badge}
       </div>"""
+
+    sub = ''
+    if jornada:
+        sub = (f'<div class="part-sub">{len(entregados)}/{len(participantes)} '
+               f'ya enviaron la Jornada {jornada}</div>')
     return f"""
 <div class="card">
   <div class="card-title">Participantes ({len(participantes)})</div>
+  {sub}
   <div class="part-grid">{cards}
   </div>
 </div>"""
@@ -805,7 +852,8 @@ def _build_index_html(d: dict) -> str:
     intro  = _section_intro()
     como   = _section_como_funciona()
     reglas = _section_reglas()
-    parts  = _section_participantes(d['participantes'], imgs)
+    parts  = _section_participantes(d['participantes'], imgs,
+                                    d['entregados'], d['proxima_jornada'])
     tabla  = _section_tabla_general(d['tabla'])
     jorns  = _section_jornadas(d['disponibles'])
     foot   = _footer()
@@ -930,6 +978,7 @@ def construir_index() -> str:
     """
     from data.loader import cargar_participantes
     from data.historial_io import cargar_historial_resultados
+    from data.respuestas_loader import normalizar_nombre
     from quiniela.standings import calcular_tabla_general
 
     participantes = cargar_participantes()
@@ -945,6 +994,12 @@ def construir_index() -> str:
     # Próxima jornada abierta = la primera que aún no se juega.
     proxima = next((n for n in sorted(JORNADA_META) if n not in jugadas), None)
 
+    # Quiénes ya enviaron el form de la próxima jornada (nombres normalizados).
+    entregas = _cargar_entregas()
+    entregados = {
+        normalizar_nombre(n) for n in entregas.get(str(proxima), [])
+    } if proxima else set()
+
     n_jugadas = len(jugadas)
     if n_jugadas == 0:
         subtitulo = 'Temporada por comenzar · J1–J6'
@@ -956,6 +1011,7 @@ def construir_index() -> str:
         'participantes':    participantes,
         'tabla':            tabla,
         'disponibles':      disponibles,
+        'entregados':       entregados,
         'proxima_jornada':  proxima,
         'proxima_form_url': JORNADA_META.get(proxima, {}).get('form_url', '') if proxima else '',
         'imagenes':         _cargar_imagenes(),

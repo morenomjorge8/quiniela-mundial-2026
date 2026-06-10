@@ -231,6 +231,9 @@ La web pública vive en `docs/` y la sirve GitHub Pages desde la rama `main`, ca
   py reports/generar_reporte.py sitio
   ```
 - **Detalle por jornada** `docs/jornada_N.html`: lo genera `generar_reporte.py N`.
+- **Quién ya envió el form**: edita `data/entregas.json` (`{ "1": ["George", ...] }`)
+  agregando nombres conforme la gente llena el form, y corre `py reports/generar_reporte.py sitio`.
+  En la sección Participantes se marcan en verde con el badge "✓ Jornada N" y un contador.
 
 ### Publicar / actualizar la web
 Después de generar (al cerrar cada jornada):
