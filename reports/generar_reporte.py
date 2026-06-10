@@ -130,7 +130,8 @@ _CSS = """
     .hdr { min-height: 160px; }
     .hdr-j { font-size: 2rem; }
     .hdr-pl { display: none; }
-    .hdr-pl:last-child, .hdr-pl:nth-last-child(2) { display: block; }
+    /* En celular mostramos las últimas 5 caricaturas (las más grandes/al frente) */
+    .hdr-pl:nth-last-child(-n+5) { display: block; margin-left: -52px; }
   }
 
   /* ── Layout ── */
@@ -482,28 +483,46 @@ def _get_avatar(nombre: str, imagenes: dict, css_cls: str = 'avatar') -> str:
 # Constructores de secciones
 # ─────────────────────────────────────────────
 
-_MAX_HDR_PLAYERS = 7   # máximo de caricaturas visibles en el header
+_MAX_HDR_PLAYERS = 11   # máximo de caricaturas visibles en el header (los 11 participantes)
 
 
-def _header(jornada, fechas, form_url, imagenes):
+def _orden_urls_header(orden_nombres, imagenes):
+    """URLs de caricaturas en el orden de la tabla, con el #1 al frente.
+
+    El header crece de atrás (pequeño/tenue) hacia el frente (grande/opaco):
+    el último de la lista es el más prominente. Por eso invertimos, para que el
+    líder de la tabla (orden_nombres[0]) quede al frente.
+    """
+    if orden_nombres is None:
+        urls = list(imagenes.values())
+    else:
+        urls = [imagenes[n] for n in orden_nombres if n in imagenes]
+    urls = urls[:_MAX_HDR_PLAYERS]
+    return list(reversed(urls))
+
+
+def _header_players_html(urls):
+    """Construye el grupo de caricaturas estilo FPL a partir de una lista de URLs."""
+    n      = len(urls)
+    solape = -44 if n <= 7 else -58   # más caricaturas → más solape para que quepan
+    players = ''
+    for i, url in enumerate(urls):
+        h  = int(130 + i * (70 / max(n - 1, 1)))   # 130 px → 200 px
+        op = round(0.48 + i * (0.52 / max(n - 1, 1)), 2)   # 0.48 → 1.0
+        ml = f'{solape}px' if i > 0 else '0'
+        players += (f'<img class="hdr-pl" '
+                    f'style="height:{h}px;opacity:{op};z-index:{i + 1};margin-left:{ml};" '
+                    f'src="{url}" alt="">')
+    return f'<div class="hdr-players">{players}</div>' if players else ''
+
+
+def _header(jornada, fechas, form_url, imagenes, orden_nombres=None):
     badge = ''
     if form_url:
         badge = '<span class="badge-open"><span class="badge-dot"></span>PREDICCIONES ABIERTAS</span>'
 
-    # Grupo de jugadores al estilo FPL: de fondo a frente
-    vals     = list(imagenes.values())
-    selected = vals[:_MAX_HDR_PLAYERS]
-    n        = len(selected)
-    players  = ''
-    for i, url in enumerate(selected):
-        h   = int(130 + i * (70 / max(n - 1, 1)))   # 130 px → 200 px
-        op  = round(0.48 + i * (0.52 / max(n - 1, 1)), 2)   # 0.48 → 1.0
-        zi  = i + 1
-        ml  = '-44px' if i > 0 else '0'
-        players += (f'<img class="hdr-pl" '
-                    f'style="height:{h}px;opacity:{op};z-index:{zi};margin-left:{ml};" '
-                    f'src="{url}" alt="">')
-    players_div = f'<div class="hdr-players">{players}</div>' if players else ''
+    # Grupo de caricaturas estilo FPL, ordenado por la tabla (líder al frente)
+    players_div = _header_players_html(_orden_urls_header(orden_nombres, imagenes))
 
     return f"""
 <header class="hdr">
@@ -629,19 +648,9 @@ def _footer():
 # Landing del sitio (docs/index.html)
 # ─────────────────────────────────────────────
 
-def _site_header(subtitulo, imagenes):
-    vals     = list(imagenes.values())
-    selected = vals[:_MAX_HDR_PLAYERS]
-    n        = len(selected)
-    players  = ''
-    for i, url in enumerate(selected):
-        h  = int(130 + i * (70 / max(n - 1, 1)))
-        op = round(0.48 + i * (0.52 / max(n - 1, 1)), 2)
-        ml = '-44px' if i > 0 else '0'
-        players += (f'<img class="hdr-pl" '
-                    f'style="height:{h}px;opacity:{op};z-index:{i + 1};margin-left:{ml};" '
-                    f'src="{url}" alt="">')
-    players_div = f'<div class="hdr-players">{players}</div>' if players else ''
+def _site_header(subtitulo, imagenes, orden_nombres=None):
+    # Caricaturas ordenadas por la tabla general (líder al frente)
+    players_div = _header_players_html(_orden_urls_header(orden_nombres, imagenes))
 
     return f"""
 <header class="hdr">
@@ -791,7 +800,7 @@ def _section_participantes(participantes, imagenes):
 
 def _build_index_html(d: dict) -> str:
     imgs   = d['imagenes']
-    head   = _site_header(d['subtitulo'], imgs)
+    head   = _site_header(d['subtitulo'], imgs, [s['nombre'] for s in d['tabla']])
     cta    = _cta_form(d['proxima_jornada'], d['proxima_form_url'])
     intro  = _section_intro()
     como   = _section_como_funciona()
@@ -830,7 +839,8 @@ def _build_index_html(d: dict) -> str:
 
 def _build_html(d: dict) -> str:
     imgs    = d.get('imagenes', {})
-    head    = _header(d['jornada'], d['fechas'], d['form_url'], imgs)
+    head    = _header(d['jornada'], d['fechas'], d['form_url'], imgs,
+                      [s['nombre'] for s in d['tabla']])
     btn     = _btn_form(d['form_url'])
     part    = _section_partidos(d['partidos'])
     jornada = _section_jornada(d['resultados_j'], imgs)
