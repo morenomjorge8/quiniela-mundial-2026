@@ -138,12 +138,24 @@ _CSS = """
     position: relative;
     flex-shrink: 0;
   }
-  @media (max-width: 480px) {
-    .hdr { min-height: 160px; }
-    .hdr-j { font-size: 2rem; }
+  @media (max-width: 600px) {
+    /* En celular apilamos: texto arriba, caricaturas en su banda abajo
+       (así nunca se encima el subtítulo con los jugadores). */
+    .hdr { flex-direction: column; min-height: auto; }
+    .hdr-content { padding: 24px 20px 8px; }
+    .hdr-j { font-size: 2.1rem; }
+    .hdr-dates { font-size: 0.88rem; }
+    .hdr-players {
+      width: 100%;
+      justify-content: center;
+      align-items: flex-end;
+      overflow: hidden;
+      padding-top: 4px;
+    }
+    /* Mostramos solo el Top 5 de la tabla (las del frente) para que quepan */
     .hdr-pl { display: none; }
-    /* En celular mostramos las últimas 5 caricaturas (las más grandes/al frente) */
-    .hdr-pl:nth-last-child(-n+5) { display: block; margin-left: -52px; }
+    .hdr-pl:nth-last-child(-n+5) { display: block; }
+    .hdr-pl:nth-last-child(5) { margin-left: 0 !important; }
   }
 
   /* ── Layout ── */
