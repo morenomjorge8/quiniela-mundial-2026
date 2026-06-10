@@ -15,11 +15,16 @@ CLASIFICAN = 6  # los 6 primeros pasan a playoffs
 
 
 def clave_desempate(stats: dict) -> tuple:
-    """Clave de orden: puntos totales → bonus acumulado → mejor jornada."""
+    """Clave de orden: puntos totales → bonus acumulado → mejor jornada → nombre.
+
+    El nombre (alfabético) es el último criterio: con todos en cero (antes de
+    arrancar el torneo) la tabla queda ordenada alfabéticamente.
+    """
     return (
         -stats['puntos_total'],
         -stats['bonus'],
         -stats['mejor_jornada'],
+        stats['nombre'].lower(),
     )
 
 

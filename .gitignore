@@ -18,7 +18,12 @@ data/historial_h2h.json
 *.xlsx
 
 # Fotos reales de referencia (privacidad) — NO publicar. Las caricaturas PNG sí se versionan.
+# Cubre cualquier carpeta cuyo nombre contenga PENDING (p.ej. 0001_PENDING).
+Caricaturas/*PENDING*/
 Caricaturas/PENDING/
+# Y por si acaso, ninguna foto real (jpg/jpeg) dentro de Caricaturas.
+Caricaturas/**/*.jpg
+Caricaturas/**/*.jpeg
 
 # Config local de la herramienta
 .claude/

@@ -431,49 +431,42 @@ _CSS_SITIO = """
 # Caricaturas
 # ─────────────────────────────────────────────
 
-_SUFIJOS = {'VF', 'VS', 'VG', 'V1', 'V2', 'V3'}
+# Caricatura de cada participante: nombre canónico → archivo en Caricaturas/.
+# Mapa explícito (los nombres de archivo no siguen una convención uniforme).
+# Actualiza aquí si agregas o cambias caricaturas.
+_CARICATURA_FILE = {
+    'George':     '11_MX_GEORGE_VF_B.png',
+    'Pedro':      '10_PEDRO_MX.png',
+    'Jime':       '03_MX_JIMENA_VF.png',
+    'Sof Orozco': '06_MX_SOF_OROZCO_VF.png',
+    'Lucía':      '04_LU_MX.png',
+    'Sof':        '09_sof_mx2.png',
+    'Dani':       '07_DANI_MX.png',
+    'Row':        '02_CR_ROWLAND_VS.png',
+    'Pablo':      '08_pablo_co.png',
+    'Pau':        '01_paula_Ar.png',
+    'Toninho':    '05_CL_TOÑO_VF_B.png',
+}
 
 
 def _cargar_imagenes() -> dict:
-    """Escanea CARICATURAS_DIR y devuelve {CLAVE: data-url}.
-    Clave = palabras del nombre en el filename (sin país, sin sufijos VF/VS/_B etc.).
-    Ej: 'MX_SOF_OROZCO_VF.png'  → 'SOF OROZCO'
-        'CL_TOÑO_VF_B.png'      → 'TOÑO'
-        'AR_PAULA_VF.png'       → 'PAULA'
-    """
+    """Devuelve {nombre_canónico: data-url} para las caricaturas existentes."""
     imgs = {}
-    if not os.path.isdir(CARICATURAS_DIR):
-        return imgs
-    for fname in sorted(os.listdir(CARICATURAS_DIR)):
-        if not fname.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-            continue
-        stem  = fname.rsplit('.', 1)[0]
-        parts = stem.split('_')
-        # Quitar desde el final: sufijos conocidos y letras sueltas de versión (B, C…)
-        while parts and (parts[-1].upper() in _SUFIJOS or
-                         (len(parts[-1]) == 1 and parts[-1].isalpha())):
-            parts.pop()
-        if len(parts) < 2:
-            continue
-        key   = ' '.join(p.upper() for p in parts[1:])   # sin código de país
+    for nombre, fname in _CARICATURA_FILE.items():
         fpath = os.path.join(CARICATURAS_DIR, fname)
+        if not os.path.exists(fpath):
+            continue
         with open(fpath, 'rb') as fh:
             b64 = base64.b64encode(fh.read()).decode('ascii')
         ext  = fname.rsplit('.', 1)[-1].lower()
-        mime = 'image/png' if ext == 'png' else f'image/{ext}'
-        imgs[key] = f'data:{mime};base64,{b64}'
+        mime = 'image/jpeg' if ext in ('jpg', 'jpeg') else f'image/{ext}'
+        imgs[nombre] = f'data:{mime};base64,{b64}'
     return imgs
 
 
 def _imagen_para(nombre: str, imagenes: dict):
-    """Devuelve la data-url de la caricatura que corresponde al nombre, o None."""
-    nombre_up = nombre.upper()
-    for key, data_url in imagenes.items():
-        # Cada palabra de la clave debe aparecer (por sus primeros 4 chars) en el nombre
-        palabras = key.split()
-        if all(nombre_up.find(p[:min(4, len(p))]) >= 0 for p in palabras):
-            return data_url
-    return None
+    """Devuelve la data-url de la caricatura del participante, o None."""
+    return imagenes.get(nombre)
 
 
 def _get_avatar(nombre: str, imagenes: dict, css_cls: str = 'avatar') -> str:
@@ -776,7 +769,7 @@ def _section_reglas():
 
 def _section_participantes(participantes, imagenes):
     cards = ''
-    for p in participantes:
+    for p in sorted(participantes, key=lambda x: x.nombre.lower()):
         url = _imagen_para(p.nombre, imagenes)
         if url:
             av = f'<img class="part-av" src="{url}" alt="{p.nombre}">'
