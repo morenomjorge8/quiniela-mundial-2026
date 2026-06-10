@@ -393,6 +393,37 @@ _CSS_SITIO = """
   .jor-link.pendiente .jor-n,
   .jor-link.pendiente .jor-fechas { opacity: 0.55; }
   .jor-link.pendiente .jor-go { color: var(--gris); }
+
+  /* Bloques informativos (cómo funciona / reglas) */
+  .info-item {
+    display: flex; gap: 11px; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    font-size: 0.86rem; color: var(--txt); line-height: 1.45;
+  }
+  .info-item:last-child { border-bottom: none; }
+  .info-ic { font-size: 1.15rem; flex-shrink: 0; line-height: 1.3; }
+  .info-item b { color: var(--cyan); font-weight: 700; }
+  .intro { color: var(--txt2); font-size: 0.88rem; line-height: 1.55; margin: -4px 0 4px; }
+
+  /* Grid de participantes */
+  .part-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .part-card {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 14px 6px; background: var(--bg2);
+    border: 1px solid var(--border); border-radius: 10px;
+  }
+  .part-av {
+    width: 62px; height: 62px; border-radius: 50%;
+    object-fit: cover; border: 2px solid rgba(0,212,255,0.5);
+  }
+  .part-ph {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card2); color: var(--cyan); font-weight: 800; font-size: 1rem;
+  }
+  .part-name { font-size: 0.8rem; font-weight: 700; color: var(--txt); text-align: center; }
+  @media (max-width: 420px) { .part-grid { grid-template-columns: repeat(2, 1fr); } }
 """
 
 
@@ -703,10 +734,76 @@ def _section_jornadas(disponibles):
 </div>"""
 
 
+def _section_intro():
+    return """
+<div class="card">
+  <div class="card-title">La Quiniela</div>
+  <p class="intro">
+    Compite con tus pronósticos del Mundial 2026. Cada jornada predices los
+    resultados de los partidos y sumas puntos. Las primeras 6 jornadas son la
+    temporada regular: arman una tabla general y los mejores pelean el título
+    en los playoffs. ⚽🏆
+  </p>
+</div>"""
+
+
+def _section_como_funciona():
+    return """
+<div class="card">
+  <div class="card-title">Cómo funciona</div>
+  <div class="info-ico-list">
+    <div class="info-item"><span class="info-ic">📅</span><div><b>Temporada regular (Jornadas 1–6):</b> cada jornada pronosticas los 12 partidos del Mundial. Tus aciertos se acumulan en la <b>tabla general</b>.</div></div>
+    <div class="info-item"><span class="info-ic">🎟️</span><div><b>Clasificación:</b> al terminar la Jornada 6, los <b>6 primeros</b> de la tabla general avanzan a los Playoffs.</div></div>
+    <div class="info-item"><span class="info-ic">🏆</span><div><b>Playoffs:</b> los lugares <b>1 y 2</b> descansan (bye) y esperan en semifinales. En cuartos juegan <b>3 vs 6</b> y <b>4 vs 5</b>. Luego semifinales y la gran final.</div></div>
+    <div class="info-item"><span class="info-ic">⚖️</span><div>En los playoffs avanza quien tenga <b>más puntos acumulados</b> de toda la quiniela.</div></div>
+  </div>
+</div>"""
+
+
+def _section_reglas():
+    return """
+<div class="card">
+  <div class="card-title">Reglas y puntuación</div>
+  <div class="info-ico-list">
+    <div class="info-item"><span class="info-ic">✅</span><div><b>+1 punto</b> por cada resultado correcto: gana local <b>(1)</b> · empate <b>(X)</b> · gana visitante <b>(2)</b>.</div></div>
+    <div class="info-item"><span class="info-ic">🟥</span><div><b>+2 puntos</b> si aciertas el <b>total de tarjetas rojas</b> de la jornada.</div></div>
+    <div class="info-item"><span class="info-ic">🎯</span><div><b>+2 puntos</b> si aciertas el <b>total de penales de falta</b> (las tandas no cuentan).</div></div>
+    <div class="info-item"><span class="info-ic">🔢</span><div><b>Desempate en la tabla:</b> puntos totales → bonus acertados → tu mejor jornada.</div></div>
+    <div class="info-item"><span class="info-ic">💰</span><div><b>Apuesta:</b> 15 USD por persona.</div></div>
+  </div>
+</div>"""
+
+
+def _section_participantes(participantes, imagenes):
+    cards = ''
+    for p in participantes:
+        url = _imagen_para(p.nombre, imagenes)
+        if url:
+            av = f'<img class="part-av" src="{url}" alt="{p.nombre}">'
+        else:
+            iniciales = ''.join(w[0] for w in p.nombre.split()[:2]).upper()
+            av = f'<div class="part-av part-ph">{iniciales}</div>'
+        cards += f"""
+      <div class="part-card">
+        {av}
+        <span class="part-name">{p.nombre}</span>
+      </div>"""
+    return f"""
+<div class="card">
+  <div class="card-title">Participantes ({len(participantes)})</div>
+  <div class="part-grid">{cards}
+  </div>
+</div>"""
+
+
 def _build_index_html(d: dict) -> str:
     imgs   = d['imagenes']
     head   = _site_header(d['subtitulo'], imgs)
     cta    = _cta_form(d['proxima_jornada'], d['proxima_form_url'])
+    intro  = _section_intro()
+    como   = _section_como_funciona()
+    reglas = _section_reglas()
+    parts  = _section_participantes(d['participantes'], imgs)
     tabla  = _section_tabla_general(d['tabla'])
     jorns  = _section_jornadas(d['disponibles'])
     foot   = _footer()
@@ -715,13 +812,17 @@ def _build_index_html(d: dict) -> str:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiniela Mundial 2026 — Tabla General</title>
+  <title>Quiniela Mundial 2026</title>
   <style>{_CSS}{_CSS_SITIO}</style>
 </head>
 <body>
 {head}
 <div class="wrap">
   {cta}
+  {intro}
+  {como}
+  {reglas}
+  {parts}
   {tabla}
   {jorns}
 </div>
@@ -849,6 +950,7 @@ def construir_index() -> str:
 
     datos = {
         'subtitulo':        subtitulo,
+        'participantes':    participantes,
         'tabla':            tabla,
         'disponibles':      disponibles,
         'proxima_jornada':  proxima,
