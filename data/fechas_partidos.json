@@ -1,14 +1,290 @@
 {
-  "1":  {"partido": "México vs Sudáfrica",            "fecha": "Jueves 11 de junio"},
-  "2":  {"partido": "Corea del Sur vs Chequia",        "fecha": "Jueves 11 de junio"},
-  "3":  {"partido": "Canadá vs Bosnia y Herzegovina",  "fecha": "Jueves 11 de junio"},
-  "4":  {"partido": "USA vs Paraguay",                 "fecha": "Viernes 12 de junio"},
-  "5":  {"partido": "Qatar vs Suiza",                  "fecha": "Viernes 12 de junio"},
-  "6":  {"partido": "Brasil vs Marruecos",             "fecha": "Viernes 12 de junio"},
-  "7":  {"partido": "Haití vs Escocia",                "fecha": "Sábado 13 de junio"},
-  "8":  {"partido": "Australia vs Turquía",            "fecha": "Sábado 13 de junio"},
-  "9":  {"partido": "Alemania vs Curazao",             "fecha": "Sábado 13 de junio"},
-  "10": {"partido": "Países Bajos vs Japón",           "fecha": "Domingo 14 de junio"},
-  "11": {"partido": "Costa de Marfil vs Ecuador",      "fecha": "Domingo 14 de junio"},
-  "12": {"partido": "Suecia vs Túnez",                 "fecha": "Domingo 14 de junio"}
+  "1": {
+    "partido": "MEXICO vs SUDÁFRICA",
+    "fecha": "Jueves 11 de junio"
+  },
+  "2": {
+    "partido": "COREA vs CHEQUIA",
+    "fecha": "Jueves 11 de junio"
+  },
+  "3": {
+    "partido": "CANADÁ vs BOSNIA Y HER",
+    "fecha": "Viernes 12 de junio"
+  },
+  "4": {
+    "partido": "USA vs PARAGUAY",
+    "fecha": "Viernes 12 de junio"
+  },
+  "5": {
+    "partido": "CATAR vs SUIZA",
+    "fecha": "Sábado 13 de junio"
+  },
+  "6": {
+    "partido": "BRASIL vs MARRUECOS",
+    "fecha": "Sábado 13 de junio"
+  },
+  "7": {
+    "partido": "HAITÍ vs ESCOCIA",
+    "fecha": "Sábado 13 de junio"
+  },
+  "8": {
+    "partido": "AUSTRALIA vs TURQUIA",
+    "fecha": "Sábado 13 de junio"
+  },
+  "9": {
+    "partido": "ALEMANIA vs CURAZAO",
+    "fecha": "Domingo 14 de junio"
+  },
+  "10": {
+    "partido": "PAISES BAJOS vs JAPÓN",
+    "fecha": "Domingo 14 de junio"
+  },
+  "11": {
+    "partido": "COSTA DE MARFIL vs ECUADOR",
+    "fecha": "Domingo 14 de junio"
+  },
+  "12": {
+    "partido": "SUECIA vs TÚNEZ",
+    "fecha": "Domingo 14 de junio"
+  },
+  "13": {
+    "partido": "ESPAÑA vs CABO VERDE",
+    "fecha": "Lunes 15 de junio"
+  },
+  "14": {
+    "partido": "BÉLGICA vs EGIPTO",
+    "fecha": "Lunes 15 de junio"
+  },
+  "15": {
+    "partido": "ARABIA SAUDÍ vs URUGUAY",
+    "fecha": "Lunes 15 de junio"
+  },
+  "16": {
+    "partido": "IRÁN vs NUEVA ZELANDA",
+    "fecha": "Lunes 15 de junio"
+  },
+  "17": {
+    "partido": "FRANCIA vs SENEGAL",
+    "fecha": "Martes 16 de junio"
+  },
+  "18": {
+    "partido": "IRAK vs NORUEGA",
+    "fecha": "Martes 16 de junio"
+  },
+  "19": {
+    "partido": "ARGENTINA vs ARGELIA",
+    "fecha": "Martes 16 de junio"
+  },
+  "20": {
+    "partido": "AUSTRIA vs JORDANIA",
+    "fecha": "Martes 16 de junio"
+  },
+  "21": {
+    "partido": "PORTUGAL vs R. CONGO",
+    "fecha": "Miércoles 17 de junio"
+  },
+  "22": {
+    "partido": "INGLATERRA vs CROACIA",
+    "fecha": "Miércoles 17 de junio"
+  },
+  "23": {
+    "partido": "GHANA vs PANAMÁ",
+    "fecha": "Miércoles 17 de junio"
+  },
+  "24": {
+    "partido": "USBEKISTÁN vs COLOMBIA",
+    "fecha": "Miércoles 17 de junio"
+  },
+  "25": {
+    "partido": "CHEQUIA vs SUDÁFRICA",
+    "fecha": "Jueves 18 de junio"
+  },
+  "26": {
+    "partido": "SUIZA vs BOSNIA Y HER",
+    "fecha": "Jueves 18 de junio"
+  },
+  "27": {
+    "partido": "CANADÁ vs CATAR",
+    "fecha": "Jueves 18 de junio"
+  },
+  "28": {
+    "partido": "MEXICO vs COREA",
+    "fecha": "Jueves 18 de junio"
+  },
+  "29": {
+    "partido": "USA vs AUSTRALIA",
+    "fecha": "Viernes 19 de junio"
+  },
+  "30": {
+    "partido": "ESCOCIA vs MARRUECOS",
+    "fecha": "Viernes 19 de junio"
+  },
+  "31": {
+    "partido": "BRASIL vs HAITÍ",
+    "fecha": "Viernes 19 de junio"
+  },
+  "32": {
+    "partido": "TURQUIA vs PARAGUAY",
+    "fecha": "Viernes 19 de junio"
+  },
+  "33": {
+    "partido": "PAISES BAJOS vs SUECIA",
+    "fecha": "Sábado 20 de junio"
+  },
+  "34": {
+    "partido": "ALEMANIA vs COSTA DE MARFIL",
+    "fecha": "Sábado 20 de junio"
+  },
+  "35": {
+    "partido": "ECUADOR vs CURAZAO",
+    "fecha": "Sábado 20 de junio"
+  },
+  "36": {
+    "partido": "TÚNEZ vs JAPÓN",
+    "fecha": "Sábado 20 de junio"
+  },
+  "37": {
+    "partido": "ESPAÑA vs ARABIA SAUDÍ",
+    "fecha": "Domingo 21 de junio"
+  },
+  "38": {
+    "partido": "BÉLGICA vs IRÁN",
+    "fecha": "Domingo 21 de junio"
+  },
+  "39": {
+    "partido": "URUGUAY vs CABO VERDE",
+    "fecha": "Domingo 21 de junio"
+  },
+  "40": {
+    "partido": "NUEVA ZELANDA vs EGIPTO",
+    "fecha": "Domingo 21 de junio"
+  },
+  "41": {
+    "partido": "ARGENTINA vs AUSTRIA",
+    "fecha": "Lunes 22 de junio"
+  },
+  "42": {
+    "partido": "FRANCIA vs IRAK",
+    "fecha": "Lunes 22 de junio"
+  },
+  "43": {
+    "partido": "NORUEGA vs SENEGAL",
+    "fecha": "Lunes 22 de junio"
+  },
+  "44": {
+    "partido": "JORDANIA vs ARGELIA",
+    "fecha": "Lunes 22 de junio"
+  },
+  "45": {
+    "partido": "PORTUGAL vs USBEKISTÁN",
+    "fecha": "Martes 23 de junio"
+  },
+  "46": {
+    "partido": "INGLATERRA vs GHANA",
+    "fecha": "Martes 23 de junio"
+  },
+  "47": {
+    "partido": "PANAMÁ vs CROACIA",
+    "fecha": "Martes 23 de junio"
+  },
+  "48": {
+    "partido": "COLOMBIA vs R. CONGO",
+    "fecha": "Martes 23 de junio"
+  },
+  "49": {
+    "partido": "SUIZA vs CANADÁ",
+    "fecha": "Miércoles 24 de junio"
+  },
+  "50": {
+    "partido": "BOSNIA Y HER vs CATAR",
+    "fecha": "Miércoles 24 de junio"
+  },
+  "51": {
+    "partido": "ESCOCIA vs BRASIL",
+    "fecha": "Miércoles 24 de junio"
+  },
+  "52": {
+    "partido": "MARRUECOS vs HAITÍ",
+    "fecha": "Miércoles 24 de junio"
+  },
+  "53": {
+    "partido": "CHEQUIA vs MEXICO",
+    "fecha": "Miércoles 24 de junio"
+  },
+  "54": {
+    "partido": "SUDÁFRICA vs COREA",
+    "fecha": "Miércoles 24 de junio"
+  },
+  "55": {
+    "partido": "CURAZAO vs COSTA DE MARFIL",
+    "fecha": "Jueves 25 de junio"
+  },
+  "56": {
+    "partido": "ECUADOR vs ALEMANIA",
+    "fecha": "Jueves 25 de junio"
+  },
+  "57": {
+    "partido": "JAPÓN vs SUECIA",
+    "fecha": "Jueves 25 de junio"
+  },
+  "58": {
+    "partido": "TÚNEZ vs PAISES BAJOS",
+    "fecha": "Jueves 25 de junio"
+  },
+  "59": {
+    "partido": "TURQUIA vs USA",
+    "fecha": "Jueves 25 de junio"
+  },
+  "60": {
+    "partido": "PARAGUAY vs AUSTRALIA",
+    "fecha": "Jueves 25 de junio"
+  },
+  "61": {
+    "partido": "NORUEGA vs FRANCIA",
+    "fecha": "Viernes 26 de junio"
+  },
+  "62": {
+    "partido": "SENEGAL vs IRAK",
+    "fecha": "Viernes 26 de junio"
+  },
+  "63": {
+    "partido": "CABO VERDE vs ARABIA SAUDÍ",
+    "fecha": "Viernes 26 de junio"
+  },
+  "64": {
+    "partido": "URUGUAY vs ESPAÑA",
+    "fecha": "Viernes 26 de junio"
+  },
+  "65": {
+    "partido": "EGIPTO vs IRÁN",
+    "fecha": "Viernes 26 de junio"
+  },
+  "66": {
+    "partido": "NUEVA ZELANDA vs BÉLGICA",
+    "fecha": "Viernes 26 de junio"
+  },
+  "67": {
+    "partido": "PANAMÁ vs INGLATERRA",
+    "fecha": "Sábado 27 de junio"
+  },
+  "68": {
+    "partido": "CROACIA vs GHANA",
+    "fecha": "Sábado 27 de junio"
+  },
+  "69": {
+    "partido": "COLOMBIA vs PORTUGAL",
+    "fecha": "Sábado 27 de junio"
+  },
+  "70": {
+    "partido": "R. CONGO vs USBEKISTÁN",
+    "fecha": "Sábado 27 de junio"
+  },
+  "71": {
+    "partido": "ARGELIA vs AUSTRIA",
+    "fecha": "Sábado 27 de junio"
+  },
+  "72": {
+    "partido": "JORDANIA vs ARGENTINA",
+    "fecha": "Sábado 27 de junio"
+  }
 }
