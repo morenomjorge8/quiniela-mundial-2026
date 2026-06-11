@@ -88,14 +88,8 @@ _CSS = """
   .foot{text-align:center;color:var(--gris);font-size:.72rem;padding:10px;}
 
   @media print{
-    @page{size:A4;margin:10mm;}
-    body{background:#fff;}
-    .hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .match,.bonus-card{background:#fff;border:1px solid #ccc;}
-    .col{background:#f6f8fb;}
-    .chip{background:#eef2f8;}
-    .bval{background:#f6f8fb;}
-    .chip-name,.match-head,.bonus-head{color:#111;}
+    /* Mantener el tema azul/oscuro en el PDF (no cambiar a blanco). */
+    @page{size:A4;margin:0;}
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
 """

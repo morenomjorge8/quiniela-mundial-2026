@@ -381,17 +381,11 @@ _CSS = """
 
   /* ── Print ── */
   @media print {
-    body { background: #fff; color: #111; }
+    /* Mantener el tema azul/oscuro en el PDF (no cambiar a blanco). */
+    @page { margin: 0; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .btn-form { display: none !important; }
-    .hdr { background: #0d1b3e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .card { background: #fff; border: 1px solid #ccc; page-break-inside: avoid; }
-    .tbl thead tr { background: #0d1b3e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .gcard-hdr { background: #0d1b3e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .tbl td, .tbl th { color: #111; }
-    .tbl th { color: #fff; }
-    .gcard-row { background: #fff; }
-    .match-item { background: #f5f5f5; border-left-color: #0d1b3e; }
-    .h2h-score { background: #f5f5f5; }
+    .card { page-break-inside: avoid; break-inside: avoid; }
   }
 
   /* ── Responsive ── */
