@@ -21,6 +21,7 @@ class PartidoMundial:
     local: str
     visitante: str
     resultado: Optional[Resultado] = None
+    fecha: Optional[str] = None  # texto libre, ej. "Jue 11 jun · 18:00"
 
 
 @dataclass

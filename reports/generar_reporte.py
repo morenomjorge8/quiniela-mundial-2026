@@ -230,6 +230,7 @@ _CSS = """
   .match-teams { font-size: 0.83rem; font-weight: 600; color: var(--txt); margin-top: 3px; }
   .match-sep   { color: var(--gris); font-weight: 400; }
   .match-result { font-size: 0.72rem; font-weight: 700; color: var(--verde); margin-top: 3px; }
+  .match-fecha  { font-size: 0.68rem; font-weight: 700; color: var(--cyan); margin-top: 4px; }
 
   /* ── H2H ── */
   .h2h-item {
@@ -604,10 +605,12 @@ def _section_partidos(partidos):
         if p.resultado:
             mapa = {'1': p.local, 'X': 'Empate', '2': p.visitante}
             resultado_txt = f'<div class="match-num" style="color:#2a9d5c">✓ {mapa.get(p.resultado.value, "")}</div>'
+        fecha_txt = f'<div class="match-fecha">📅 {p.fecha}</div>' if p.fecha else ''
         items += f"""
         <div class="match-item">
           <div class="match-num">Partido #{p.numero}</div>
           <div class="match-teams">{p.local} <span class="match-sep">vs</span> {p.visitante}</div>
+          {fecha_txt}
           {resultado_txt}
         </div>"""
     return f"""

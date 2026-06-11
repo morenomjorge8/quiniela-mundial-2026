@@ -47,9 +47,12 @@ _CSS = """
     background:var(--card);border:1px solid var(--border);border-radius:12px;
     padding:12px 12px 14px;margin-bottom:12px;page-break-inside:avoid;break-inside:avoid;
   }
-  .match-head{font-size:.95rem;font-weight:800;color:var(--txt);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .match-head{font-size:.95rem;font-weight:800;color:var(--txt);margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .mnum{font-size:.66rem;font-weight:800;color:#001018;background:var(--cyan);border-radius:6px;padding:2px 7px;}
   .match-head i{color:var(--gris);font-style:normal;font-weight:600;font-size:.82rem;}
+  .mfecha{margin-left:auto;font-size:.68rem;font-weight:700;color:var(--cyan);
+          background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.28);
+          border-radius:20px;padding:2px 9px;white-space:nowrap;}
 
   .cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
   .col{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:8px;min-height:64px;}
@@ -189,10 +192,11 @@ def construir_html(jornada, partidos, predicciones, bonus, imagenes):
             + _columna('Empate <b>(X)</b>', 'col-x', grupos[Resultado.EMPATE], imagenes)
             + _columna(f'Gana {partido.visitante} <b>(2)</b>', 'col-2', grupos[Resultado.VISITANTE], imagenes)
         )
+        fecha = f'<span class="mfecha">📅 {partido.fecha}</span>' if partido.fecha else ''
         bloques += f"""
     <div class="match">
       <div class="match-head"><span class="mnum">#{partido.numero}</span>
-        {partido.local} <i>vs</i> {partido.visitante}</div>
+        {partido.local} <i>vs</i> {partido.visitante}{fecha}</div>
       <div class="cols">{cols}</div>
     </div>"""
 
