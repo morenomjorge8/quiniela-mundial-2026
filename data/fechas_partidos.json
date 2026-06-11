@@ -1,14 +1,14 @@
 {
-  "1":  {"partido": "México vs Sudáfrica",            "fecha": ""},
-  "2":  {"partido": "Corea del Sur vs Chequia",        "fecha": ""},
-  "3":  {"partido": "Canadá vs Bosnia y Herzegovina",  "fecha": ""},
-  "4":  {"partido": "USA vs Paraguay",                 "fecha": ""},
-  "5":  {"partido": "Qatar vs Suiza",                  "fecha": ""},
-  "6":  {"partido": "Brasil vs Marruecos",             "fecha": ""},
-  "7":  {"partido": "Haití vs Escocia",                "fecha": ""},
-  "8":  {"partido": "Australia vs Turquía",            "fecha": ""},
-  "9":  {"partido": "Alemania vs Curazao",             "fecha": ""},
-  "10": {"partido": "Países Bajos vs Japón",           "fecha": ""},
-  "11": {"partido": "Costa de Marfil vs Ecuador",      "fecha": ""},
-  "12": {"partido": "Suecia vs Túnez",                 "fecha": ""}
+  "1":  {"partido": "México vs Sudáfrica",            "fecha": "Jueves 11 de junio"},
+  "2":  {"partido": "Corea del Sur vs Chequia",        "fecha": "Jueves 11 de junio"},
+  "3":  {"partido": "Canadá vs Bosnia y Herzegovina",  "fecha": "Jueves 11 de junio"},
+  "4":  {"partido": "USA vs Paraguay",                 "fecha": "Viernes 12 de junio"},
+  "5":  {"partido": "Qatar vs Suiza",                  "fecha": "Viernes 12 de junio"},
+  "6":  {"partido": "Brasil vs Marruecos",             "fecha": "Viernes 12 de junio"},
+  "7":  {"partido": "Haití vs Escocia",                "fecha": "Sábado 13 de junio"},
+  "8":  {"partido": "Australia vs Turquía",            "fecha": "Sábado 13 de junio"},
+  "9":  {"partido": "Alemania vs Curazao",             "fecha": "Sábado 13 de junio"},
+  "10": {"partido": "Países Bajos vs Japón",           "fecha": "Domingo 14 de junio"},
+  "11": {"partido": "Costa de Marfil vs Ecuador",      "fecha": "Domingo 14 de junio"},
+  "12": {"partido": "Suecia vs Túnez",                 "fecha": "Domingo 14 de junio"}
 }
