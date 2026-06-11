@@ -4,19 +4,22 @@ Hoja visual de predicciones de una jornada (para compartir en WhatsApp / PDF).
 Para cada partido muestra tres columnas — gana local (1), empate (X), gana
 visitante (2) — y en cada una las caricaturas de quienes eligieron esa opción.
 
+Las caricaturas se referencian como <img> a archivos (copiados a output/caric/),
+NO como background-image: iOS renderiza mal los background-image en PDF (salen
+invertidos), y así además el HTML pesa unos KB.
+
 Uso:
     py reports/predicciones_jornada.py 1        # lee data/respuestas/jornada_1.csv
     py reports/predicciones_jornada.py 1 sim    # datos simulados (prueba)
 
-Genera reports/output/predicciones_jornada_N.html y lo abre en el navegador.
-Para el PDF: en el navegador Ctrl+P → "Guardar como PDF" (activa
-"Gráficos de fondo"). O con Edge headless (ver README de uso al final).
+Para el PDF: en el navegador Ctrl+P → "Guardar como PDF" (activa "Gráficos de
+fondo" para que salga el tema azul).
 """
-import base64
 import os
-import re
+import shutil
 import sys
 import unicodedata
+import urllib.parse
 import webbrowser
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -24,13 +27,17 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from data.loader import cargar_calendario
 from data.respuestas_loader import cargar_respuestas
 from quiniela.models import Resultado, Prediccion
-from reports.generar_reporte import _cargar_imagenes, _imagen_para, JORNADA_META, CARICATURAS_DIR
+from reports.generar_reporte import _CARICATURA_FILE, JORNADA_META, CARICATURAS_DIR
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'output')
+CARIC_SUBDIR = 'caric'  # subcarpeta junto al HTML donde se copian las caricaturas
 
 # Mascota "oráculo" estilo Pulpo Paul: siempre predice que gana México.
 PACO_NOMBRE = 'Paco Ajolote'
 PACO_ARCHIVO = 'paco_sticker.png'
+
+# Nombre canónico → archivo de caricatura (participantes + mascota).
+_ARCHIVO_DE = {**_CARICATURA_FILE, PACO_NOMBRE: PACO_ARCHIVO}
 
 _CSS = """
   :root{
@@ -72,13 +79,13 @@ _CSS = """
   .chips{display:flex;flex-wrap:wrap;gap:6px;}
   .chip{display:flex;align-items:center;gap:5px;background:var(--card2);
         border:1px solid var(--border);border-radius:20px;padding:2px 9px 2px 2px;}
-  .chip-av{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(0,212,255,.5);
-           background-size:cover;background-position:center;flex-shrink:0;}
+  .chip-av{width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:center;
+           border:1.5px solid rgba(0,212,255,.5);flex-shrink:0;}
   .chip-ph{display:flex;align-items:center;justify-content:center;background:#26314d;
-           color:var(--cyan);font-size:.55rem;font-weight:800;}
+           color:var(--cyan);font-size:.6rem;font-weight:800;}
   .chip-name{font-size:.72rem;font-weight:700;color:var(--txt);white-space:nowrap;}
   .chip-mascota{background:rgba(255,122,200,.16);border-color:rgba(255,122,200,.65);}
-  .chip-mascota .chip-av{border-color:#ff7ac8;background-color:#2a1622;}
+  .chip-mascota .chip-av{border-color:#ff7ac8;}
   .chip-mascota .chip-name{color:#ffd0ec;}
   .empty{color:var(--gris);font-size:.8rem;text-align:center;padding:6px 0;}
 
@@ -107,15 +114,11 @@ _CSS = """
 """
 
 
-def _slug(nombre):
-    return re.sub(r'[^a-z0-9]+', '-', nombre.lower()).strip('-')
-
-
-def _chip(nombre, imagenes):
-    """Chip de un participante. Usa clase .av-<slug> (la imagen se embebe una
-    sola vez en el <style>) o iniciales si no tiene caricatura."""
-    if _imagen_para(nombre, imagenes):
-        av = f'<span class="chip-av av-{_slug(nombre)}"></span>'
+def _chip(nombre, srcs):
+    """Chip de un participante: <img> de su caricatura o sus iniciales."""
+    src = srcs.get(nombre)
+    if src:
+        av = f'<img class="chip-av" src="{src}" alt="">'
     else:
         ini = ''.join(w[0] for w in nombre.split()[:2]).upper()
         av = f'<div class="chip-av chip-ph">{ini}</div>'
@@ -124,11 +127,11 @@ def _chip(nombre, imagenes):
     return f'<div class="chip">{av}<span class="chip-name">{nombre}</span></div>'
 
 
-def _inyectar_mascota(predicciones, partidos, imagenes):
+def _inyectar_mascota(predicciones, partidos):
     """Agrega a Paco Ajolote prediciendo que gana México (si México juega).
 
-    Modifica `predicciones` e `imagenes` en sitio. No es un participante real:
-    no cuenta para el conteo ni la tabla, solo aparece en la hoja como chiste.
+    No es un participante real: no cuenta para el conteo ni la tabla, solo
+    aparece en la hoja como chiste.
     """
     def es_mexico(nombre):
         n = unicodedata.normalize('NFKD', str(nombre)).encode('ascii', 'ignore').decode().upper()
@@ -145,27 +148,29 @@ def _inyectar_mascota(predicciones, partidos, imagenes):
         participante=PACO_NOMBRE, partido_numero=partido_mx.numero, prediccion=pred,
     ))
 
-    sticker = os.path.join(CARICATURAS_DIR, PACO_ARCHIVO)
-    if os.path.exists(sticker):
-        with open(sticker, 'rb') as fh:
-            b64 = base64.b64encode(fh.read()).decode('ascii')
-        imagenes[PACO_NOMBRE] = f'data:image/png;base64,{b64}'
+
+def _preparar_srcs(nombres, dest_dir):
+    """Copia las caricaturas necesarias a dest_dir/caric/ y devuelve
+    {nombre: ruta_relativa_para_el_html}. Usa <img>, no background-image."""
+    caric_dir = os.path.join(dest_dir, CARIC_SUBDIR)
+    os.makedirs(caric_dir, exist_ok=True)
+    srcs = {}
+    for nombre in nombres:
+        fname = _ARCHIVO_DE.get(nombre)
+        if not fname:
+            continue
+        origen = os.path.join(CARICATURAS_DIR, fname)
+        if not os.path.exists(origen):
+            continue
+        shutil.copy(origen, os.path.join(caric_dir, fname))
+        srcs[nombre] = f'{CARIC_SUBDIR}/{urllib.parse.quote(fname)}'
+    return srcs
 
 
-def _estilos_avatares(nombres, imagenes):
-    """Una regla CSS por persona (imagen embebida 1 sola vez)."""
-    reglas = ''
-    for nombre in sorted(nombres):
-        url = _imagen_para(nombre, imagenes)
-        if url:
-            reglas += f'.av-{_slug(nombre)}{{background-image:url({url});}}'
-    return reglas
-
-
-def _columna(titulo, clase, nombres, imagenes):
+def _columna(titulo, clase, nombres, srcs):
     if nombres:
         ordenados = sorted(nombres, key=str.lower)
-        chips = '<div class="chips">' + ''.join(_chip(n, imagenes) for n in ordenados) + '</div>'
+        chips = '<div class="chips">' + ''.join(_chip(n, srcs) for n in ordenados) + '</div>'
     else:
         chips = '<div class="empty">—</div>'
     return f'<div class="col {clase}"><div class="col-h">{titulo}</div>{chips}</div>'
@@ -179,22 +184,22 @@ def _grupo_por_valor(bonus, attr):
     return dict(sorted(d.items()))
 
 
-def _bonus_filas(grupos, imagenes):
+def _bonus_filas(grupos, srcs):
     if not grupos:
         return '<div class="empty">Sin respuestas</div>'
     filas = ''
     for valor, nombres in grupos.items():
-        chips = ''.join(_chip(n, imagenes) for n in sorted(nombres, key=str.lower))
+        chips = ''.join(_chip(n, srcs) for n in sorted(nombres, key=str.lower))
         filas += (f'<div class="bonus-row"><span class="bval">{valor}</span>'
                   f'<div class="chips">{chips}</div></div>')
     return filas
 
 
-def _seccion_bonos(bonus, imagenes):
+def _seccion_bonos(bonus, srcs):
     if not bonus:
         return ''
-    rojas = _bonus_filas(_grupo_por_valor(bonus, 'total_rojas'), imagenes)
-    penales = _bonus_filas(_grupo_por_valor(bonus, 'total_penales'), imagenes)
+    rojas = _bonus_filas(_grupo_por_valor(bonus, 'total_rojas'), srcs)
+    penales = _bonus_filas(_grupo_por_valor(bonus, 'total_penales'), srcs)
     return f"""
     <div class="sec-title">Bonos de la jornada (+2 c/u)</div>
     <div class="bonus-grid">
@@ -219,7 +224,7 @@ def _agrupar(predicciones):
     return por_partido
 
 
-def construir_html(jornada, partidos, predicciones, bonus, imagenes):
+def construir_html(jornada, partidos, predicciones, bonus, srcs):
     por_partido = _agrupar(predicciones)
     n_participantes = len({p.participante for p in predicciones} - {PACO_NOMBRE})
 
@@ -227,9 +232,9 @@ def construir_html(jornada, partidos, predicciones, bonus, imagenes):
     for partido in partidos:
         grupos = por_partido.get(partido.numero, {r: [] for r in Resultado})
         cols = (
-            _columna(f'Gana {partido.local} <b>(1)</b>', 'col-1', grupos[Resultado.LOCAL], imagenes)
-            + _columna('Empate <b>(X)</b>', 'col-x', grupos[Resultado.EMPATE], imagenes)
-            + _columna(f'Gana {partido.visitante} <b>(2)</b>', 'col-2', grupos[Resultado.VISITANTE], imagenes)
+            _columna(f'Gana {partido.local} <b>(1)</b>', 'col-1', grupos[Resultado.LOCAL], srcs)
+            + _columna('Empate <b>(X)</b>', 'col-x', grupos[Resultado.EMPATE], srcs)
+            + _columna(f'Gana {partido.visitante} <b>(2)</b>', 'col-2', grupos[Resultado.VISITANTE], srcs)
         )
         fecha = f'<span class="mfecha">📅 {partido.fecha}</span>' if partido.fecha else ''
         bloques += f"""
@@ -239,14 +244,12 @@ def construir_html(jornada, partidos, predicciones, bonus, imagenes):
       <div class="cols">{cols}</div>
     </div>"""
 
-    seccion_bonos = _seccion_bonos(bonus, imagenes)
+    seccion_bonos = _seccion_bonos(bonus, srcs)
     fechas = JORNADA_META.get(jornada, {}).get('fechas', '')
-    nombres = {p.participante for p in predicciones} | {b.participante for b in bonus}
-    estilos_av = _estilos_avatares(nombres, imagenes)
     return f"""<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Predicciones J{jornada} — Mundial 2026</title><style>{_CSS}{estilos_av}</style></head>
+<title>Predicciones J{jornada} — Mundial 2026</title><style>{_CSS}</style></head>
 <body>
 <header class="hdr">
   <div class="hdr-eyebrow">⚽ Quiniela Mundial 2026</div>
@@ -282,11 +285,13 @@ def generar(jornada, predicciones_override=None, bonus_override=None):
             )
         predicciones, bonus = cargar_respuestas(jornada, csv_path)
 
-    imagenes = _cargar_imagenes()
-    _inyectar_mascota(predicciones, partidos, imagenes)
-    html = construir_html(jornada, partidos, predicciones, bonus, imagenes)
+    _inyectar_mascota(predicciones, partidos)
 
+    nombres = {p.participante for p in predicciones} | {b.participante for b in bonus}
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    srcs = _preparar_srcs(nombres, OUTPUT_DIR)
+
+    html = construir_html(jornada, partidos, predicciones, bonus, srcs)
     ruta = os.path.join(OUTPUT_DIR, f'predicciones_jornada_{jornada}.html')
     with open(ruta, 'w', encoding='utf-8') as f:
         f.write(html)
