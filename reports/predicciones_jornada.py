@@ -72,8 +72,8 @@ _CSS = """
   .chips{display:flex;flex-wrap:wrap;gap:6px;}
   .chip{display:flex;align-items:center;gap:5px;background:var(--card2);
         border:1px solid var(--border);border-radius:20px;padding:2px 9px 2px 2px;}
-  .chip-av{width:24px;height:24px;border-radius:50%;border:1.5px solid rgba(0,212,255,.5);
-           background-size:cover;background-position:center top;flex-shrink:0;}
+  .chip-av{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(0,212,255,.5);
+           background-size:cover;background-position:center;flex-shrink:0;}
   .chip-ph{display:flex;align-items:center;justify-content:center;background:#26314d;
            color:var(--cyan);font-size:.55rem;font-weight:800;}
   .chip-name{font-size:.72rem;font-weight:700;color:var(--txt);white-space:nowrap;}
