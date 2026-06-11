@@ -81,7 +81,14 @@ def _parsear_entero(valor: str, campo: str) -> int:
     try:
         n = int(txt)
     except ValueError:
-        raise ValueError(f"Campo '{campo}' no es entero: {txt!r}")
+        # Tolera valores numéricos de Excel/Forms tipo "3.0".
+        try:
+            f = float(txt)
+        except ValueError:
+            raise ValueError(f"Campo '{campo}' no es entero: {txt!r}")
+        if not f.is_integer():
+            raise ValueError(f"Campo '{campo}' no es entero: {txt!r}")
+        n = int(f)
     if n < 0:
         raise ValueError(f"Campo '{campo}' negativo: {n}")
     return n

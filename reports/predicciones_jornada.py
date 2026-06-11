@@ -12,19 +12,25 @@ Genera reports/output/predicciones_jornada_N.html y lo abre en el navegador.
 Para el PDF: en el navegador Ctrl+P → "Guardar como PDF" (activa
 "Gráficos de fondo"). O con Edge headless (ver README de uso al final).
 """
+import base64
 import os
 import re
 import sys
+import unicodedata
 import webbrowser
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from data.loader import cargar_calendario
 from data.respuestas_loader import cargar_respuestas
-from quiniela.models import Resultado
-from reports.generar_reporte import _cargar_imagenes, _imagen_para, JORNADA_META
+from quiniela.models import Resultado, Prediccion
+from reports.generar_reporte import _cargar_imagenes, _imagen_para, JORNADA_META, CARICATURAS_DIR
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'output')
+
+# Mascota "oráculo" estilo Pulpo Paul: siempre predice que gana México.
+PACO_NOMBRE = 'Paco Ajolote'
+PACO_ARCHIVO = 'paco_sticker.png'
 
 _CSS = """
   :root{
@@ -71,6 +77,9 @@ _CSS = """
   .chip-ph{display:flex;align-items:center;justify-content:center;background:#26314d;
            color:var(--cyan);font-size:.55rem;font-weight:800;}
   .chip-name{font-size:.72rem;font-weight:700;color:var(--txt);white-space:nowrap;}
+  .chip-mascota{background:rgba(255,122,200,.16);border-color:rgba(255,122,200,.65);}
+  .chip-mascota .chip-av{border-color:#ff7ac8;background-color:#2a1622;}
+  .chip-mascota .chip-name{color:#ffd0ec;}
   .empty{color:var(--gris);font-size:.8rem;text-align:center;padding:6px 0;}
 
   .sec-title{font-size:.72rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
@@ -110,7 +119,37 @@ def _chip(nombre, imagenes):
     else:
         ini = ''.join(w[0] for w in nombre.split()[:2]).upper()
         av = f'<div class="chip-av chip-ph">{ini}</div>'
+    if nombre == PACO_NOMBRE:
+        return f'<div class="chip chip-mascota">{av}<span class="chip-name">{nombre} 🔮</span></div>'
     return f'<div class="chip">{av}<span class="chip-name">{nombre}</span></div>'
+
+
+def _inyectar_mascota(predicciones, partidos, imagenes):
+    """Agrega a Paco Ajolote prediciendo que gana México (si México juega).
+
+    Modifica `predicciones` e `imagenes` en sitio. No es un participante real:
+    no cuenta para el conteo ni la tabla, solo aparece en la hoja como chiste.
+    """
+    def es_mexico(nombre):
+        n = unicodedata.normalize('NFKD', str(nombre)).encode('ascii', 'ignore').decode().upper()
+        return 'MEXICO' in n
+
+    partido_mx = next(
+        (p for p in partidos if es_mexico(p.local) or es_mexico(p.visitante)), None
+    )
+    if partido_mx is None:
+        return  # México no juega esta jornada
+
+    pred = Resultado.LOCAL if es_mexico(partido_mx.local) else Resultado.VISITANTE
+    predicciones.append(Prediccion(
+        participante=PACO_NOMBRE, partido_numero=partido_mx.numero, prediccion=pred,
+    ))
+
+    sticker = os.path.join(CARICATURAS_DIR, PACO_ARCHIVO)
+    if os.path.exists(sticker):
+        with open(sticker, 'rb') as fh:
+            b64 = base64.b64encode(fh.read()).decode('ascii')
+        imagenes[PACO_NOMBRE] = f'data:image/png;base64,{b64}'
 
 
 def _estilos_avatares(nombres, imagenes):
@@ -182,7 +221,7 @@ def _agrupar(predicciones):
 
 def construir_html(jornada, partidos, predicciones, bonus, imagenes):
     por_partido = _agrupar(predicciones)
-    n_participantes = len({p.participante for p in predicciones})
+    n_participantes = len({p.participante for p in predicciones} - {PACO_NOMBRE})
 
     bloques = ''
     for partido in partidos:
@@ -244,6 +283,7 @@ def generar(jornada, predicciones_override=None, bonus_override=None):
         predicciones, bonus = cargar_respuestas(jornada, csv_path)
 
     imagenes = _cargar_imagenes()
+    _inyectar_mascota(predicciones, partidos, imagenes)
     html = construir_html(jornada, partidos, predicciones, bonus, imagenes)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -254,6 +294,11 @@ def generar(jornada, predicciones_override=None, bonus_override=None):
 
 
 if __name__ == '__main__':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except AttributeError:
+        pass
+
     jornada = int(sys.argv[1]) if len(sys.argv) > 1 else 1
     usar_sim = len(sys.argv) > 2 and sys.argv[2] == 'sim'
 
