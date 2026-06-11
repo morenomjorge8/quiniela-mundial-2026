@@ -32,6 +32,8 @@ const PARTICIPANTES = [
   'Pablo',
   'Pau',
   'Toninho',
+  'Llanos',
+  'Vicente',
 ];
 
 const JORNADAS = [

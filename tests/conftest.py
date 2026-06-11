@@ -14,10 +14,10 @@ from quiniela.models import (
 
 @pytest.fixture
 def participantes_mock() -> list[Participante]:
-    """Los 11 participantes canónicos, sin tocar Excel."""
+    """Los participantes canónicos, sin tocar Excel."""
     nombres = [
         'George', 'Pedro', 'Jime', 'Sof Orozco', 'Lucía', 'Sof',
-        'Dani', 'Row', 'Pablo', 'Pau', 'Toninho',
+        'Dani', 'Row', 'Pablo', 'Pau', 'Toninho', 'Llanos', 'Vicente',
     ]
     return [Participante(nombre=n) for n in nombres]
 

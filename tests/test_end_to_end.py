@@ -9,7 +9,7 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-N_PARTICIPANTES = 11
+N_PARTICIPANTES = 13
 
 
 @pytest.fixture

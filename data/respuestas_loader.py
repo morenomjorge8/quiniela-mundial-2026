@@ -41,6 +41,12 @@ ALIAS = {
     'paula': 'Pau',
     'toninho': 'Toninho',
     'toninho pernanbucano': 'Toninho',
+    'llanos': 'Llanos',
+    'pedro llanos': 'Llanos',
+    'vicente': 'Vicente',
+    'vicente roquení': 'Vicente',
+    'vicente roqueni': 'Vicente',
+    'roqueni': 'Vicente',
 }
 
 

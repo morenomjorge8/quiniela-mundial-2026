@@ -492,6 +492,8 @@ _CARICATURA_FILE = {
     'Pablo':      '08_pablo_co.png',
     'Pau':        '01_paula_Ar.png',
     'Toninho':    '05_CL_TOÑO_VF_B.png',
+    'Llanos':     '12_mx_llanos_vf.png',
+    'Vicente':    '13_vicente_-removebg-preview.png',
 }
 
 
@@ -528,7 +530,7 @@ def _get_avatar(nombre: str, imagenes: dict, css_cls: str = 'avatar') -> str:
 # Constructores de secciones
 # ─────────────────────────────────────────────
 
-_MAX_HDR_PLAYERS = 11   # máximo de caricaturas visibles en el header (los 11 participantes)
+_MAX_HDR_PLAYERS = 13   # máximo de caricaturas visibles en el header (todos los participantes)
 
 
 def _orden_urls_header(orden_nombres, imagenes):

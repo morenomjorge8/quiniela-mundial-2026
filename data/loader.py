@@ -26,6 +26,8 @@ PARTICIPANTES = [
     'Pablo',
     'Pau',
     'Toninho',
+    'Llanos',
+    'Vicente',
 ]
 
 
