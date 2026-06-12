@@ -47,7 +47,11 @@ def evaluar_jornada(
         todos_los_participantes=nombres,
     )
 
-    historial_total = (historial_previo or []) + resultados_j
+    # Reemplaza (no suma) los resultados previos de ESTA jornada, para que
+    # re-correrla en vivo —según van terminando los partidos— sea idempotente.
+    historial_total = [
+        r for r in (historial_previo or []) if r.jornada != jornada
+    ] + resultados_j
     tabla = calcular_tabla_general(participantes, historial_total)
 
     return {

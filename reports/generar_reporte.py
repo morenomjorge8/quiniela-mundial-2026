@@ -1002,14 +1002,23 @@ def construir_index() -> str:
         n for n in JORNADA_META
         if os.path.exists(os.path.join(OUTPUT_DIR, f'jornada_{n}.html'))
     } | jugadas
-    # Próxima jornada abierta = la primera que aún no se juega.
-    proxima = next((n for n in sorted(JORNADA_META) if n not in jugadas), None)
 
-    # Quiénes ya enviaron el form de la próxima jornada (nombres normalizados).
+    # Jornada "actual" para la sección de entregados y el CTA del form: la última
+    # con entregas registradas (la que se está recolectando/jugando). Así, aunque
+    # una jornada ya empezó a contar puntos, la portada no salta a la siguiente.
     entregas = _cargar_entregas()
+    if entregas:
+        jornada_form = max(int(k) for k in entregas)
+    else:
+        jornada_form = next((n for n in sorted(JORNADA_META) if n not in jugadas), None)
+
     entregados = {
-        normalizar_nombre(n) for n in entregas.get(str(proxima), [])
-    } if proxima else set()
+        normalizar_nombre(n) for n in entregas.get(str(jornada_form), [])
+    } if jornada_form else set()
+
+    # El CTA "Llenar predicciones" solo si esa jornada aún no empieza a jugarse.
+    cta_abierto = jornada_form is not None and jornada_form not in jugadas
+    form_url = JORNADA_META.get(jornada_form, {}).get('form_url', '') if cta_abierto else ''
 
     n_jugadas = len(jugadas)
     if n_jugadas == 0:
@@ -1023,8 +1032,8 @@ def construir_index() -> str:
         'tabla':            tabla,
         'disponibles':      disponibles,
         'entregados':       entregados,
-        'proxima_jornada':  proxima,
-        'proxima_form_url': JORNADA_META.get(proxima, {}).get('form_url', '') if proxima else '',
+        'proxima_jornada':  jornada_form,
+        'proxima_form_url': form_url,
         'imagenes':         _cargar_imagenes(),
     }
     html = _build_index_html(datos)

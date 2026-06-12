@@ -2,8 +2,11 @@
   "_comment": "Resultados oficiales del Mundial 2026. Llena cada jornada al terminar los partidos.",
   "_formato": "jornada → resultados (partido_num → '1'|'X'|'2'), total_rojas (int), total_penales (de falta, no tandas)",
   "1": {
-    "resultados": {},
-    "total_rojas": 0,
+    "resultados": {
+      "1": "1",
+      "2": "X"
+    },
+    "total_rojas": 3,
     "total_penales": 0
   },
   "2": {
