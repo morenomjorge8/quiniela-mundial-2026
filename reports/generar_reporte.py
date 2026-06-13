@@ -401,18 +401,31 @@ _CSS = """
 _CSS_SITIO = """
   .jor-link {
     display: flex; align-items: center; gap: 10px;
-    padding: 12px 4px; text-decoration: none;
-    border-bottom: 1px solid var(--border);
+    padding: 11px 8px; border-bottom: 1px solid var(--border);
   }
   .jor-link:last-child { border-bottom: none; }
-  .jor-n      { font-weight: 800; color: var(--txt); font-size: 0.9rem; min-width: 92px; }
-  .jor-fechas { flex: 1; color: var(--txt2); font-size: 0.78rem; }
-  .jor-go     { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.5px; }
-  .jor-link.jugada   .jor-go { color: var(--cyan); }
-  .jor-link.jugada:hover { background: var(--card2); border-radius: 8px; }
-  .jor-link.pendiente .jor-n,
-  .jor-link.pendiente .jor-fechas { opacity: 0.55; }
-  .jor-link.pendiente .jor-go { color: var(--gris); }
+  .jor-n      { font-weight: 800; color: var(--txt); font-size: 0.9rem; min-width: 84px; }
+  .jor-fechas { flex: 1; color: var(--txt2); font-size: 0.76rem; min-width: 0; }
+  .jor-actions{ display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .jor-go     { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.4px; color: var(--cyan); text-decoration: none; }
+  .jor-go.pend{ color: var(--gris); }
+  .jor-form {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.3px;
+    color: #001018; text-decoration: none;
+    background: linear-gradient(135deg, var(--cyan2) 0%, var(--cyan) 100%);
+    padding: 6px 11px; border-radius: 18px;
+    box-shadow: 0 2px 10px rgba(0,212,255,0.25);
+  }
+  .jor-badge {
+    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--verde); background: rgba(46,213,115,0.14);
+    border: 1px solid rgba(46,213,115,0.45); border-radius: 20px; padding: 2px 8px;
+  }
+  .jor-link.abierta {
+    background: rgba(0,212,255,0.06);
+    border-left: 3px solid var(--cyan); border-radius: 8px;
+  }
 
   /* Bloques informativos (cómo funciona / reglas) */
   .info-item {
@@ -754,24 +767,30 @@ def _section_tabla_general(tabla, clasifican=CLASIFICAN):
 </div>"""
 
 
-def _section_jornadas(disponibles):
-    """Lista J1–J6 con link a su detalle si ya se jugó."""
+def _section_jornadas(disponibles, jornada_actual=None):
+    """Lista J1–J6: link al form de predicciones de cada una y, si ya se jugó,
+    link a sus resultados. La jornada abierta se marca con un badge."""
     items = ''
     for n in sorted(JORNADA_META):
         meta = JORNADA_META[n]
+        form_url = meta.get('form_url', '')
+        es_actual = (n == jornada_actual)
+
+        acciones = ''
+        if es_actual:
+            acciones += '<span class="jor-badge">● Abierta</span>'
         if n in disponibles:
-            items += f"""
-      <a class="jor-link jugada" href="jornada_{n}.html">
-        <span class="jor-n">Jornada {n}</span>
-        <span class="jor-fechas">{meta['fechas']}</span>
-        <span class="jor-go">Ver resultados →</span>
-      </a>"""
+            acciones += f'<a class="jor-go" href="jornada_{n}.html">Ver resultados →</a>'
+        elif form_url:
+            acciones += f'<a class="jor-form" href="{form_url}" target="_blank">📝 Predicciones →</a>'
         else:
-            items += f"""
-      <div class="jor-link pendiente">
+            acciones += '<span class="jor-go pend">Pendiente</span>'
+
+        items += f"""
+      <div class="jor-link{' abierta' if es_actual else ''}">
         <span class="jor-n">Jornada {n}</span>
         <span class="jor-fechas">{meta['fechas']}</span>
-        <span class="jor-go">Pendiente</span>
+        <span class="jor-actions">{acciones}</span>
       </div>"""
     return f"""
 <div class="card">
@@ -866,7 +885,7 @@ def _build_index_html(d: dict) -> str:
     parts  = _section_participantes(d['participantes'], imgs,
                                     d['entregados'], d['proxima_jornada'])
     tabla  = _section_tabla_general(d['tabla'])
-    jorns  = _section_jornadas(d['disponibles'])
+    jorns  = _section_jornadas(d['disponibles'], d['proxima_jornada'])
     foot   = _footer()
     return f"""<!DOCTYPE html>
 <html lang="es">
