@@ -661,19 +661,25 @@ def _section_tabla(tabla, resultados_j, clasifican=CLASIFICAN):
     top_cls = {1: 'top3-1', 2: 'top3-2', 3: 'top3-3'}
 
     filas = ''
-    for i, s in enumerate(tabla, 1):
+    prev_pts = None
+    rank = 0
+    for pos, s in enumerate(tabla, 1):
+        # Lugar compartido en empates; el corte de playoffs sigue la posición.
+        if s['puntos_total'] != prev_pts:
+            rank = pos
+            prev_pts = s['puntos_total']
         clases = []
-        if i in top_cls:
-            clases.append(top_cls[i])
-        if i <= clasifican:
+        if rank in top_cls:
+            clases.append(top_cls[rank])
+        if pos <= clasifican:
             clases.append('qual')
-        if i == clasifican:
+        if pos == clasifican:
             clases.append('cut')
         row_cls = ' '.join(clases)
         pj = pts_jornada.get(s['nombre'], 0)
         filas += f"""
         <tr class="{row_cls}">
-          <td class="rank">{i}</td>
+          <td class="rank">{rank}</td>
           <td class="left">{s['nombre']}</td>
           <td>{pj}</td>
           <td>{s['bonus']}</td>
@@ -734,17 +740,24 @@ def _section_tabla_general(tabla, clasifican=CLASIFICAN):
     """Tabla acumulada de toda la temporada (sin columna de jornada puntual)."""
     top_cls = {1: 'top3-1', 2: 'top3-2', 3: 'top3-3'}
     filas = ''
-    for i, s in enumerate(tabla, 1):
+    prev_pts = None
+    rank = 0
+    for pos, s in enumerate(tabla, 1):
+        # Lugar compartido para empates (mismos puntos = mismo #). El corte de
+        # playoffs sigue la posición física (solo 6 lugares; el desempate decide).
+        if s['puntos_total'] != prev_pts:
+            rank = pos
+            prev_pts = s['puntos_total']
         clases = []
-        if i in top_cls:
-            clases.append(top_cls[i])
-        if i <= clasifican:
+        if rank in top_cls:
+            clases.append(top_cls[rank])
+        if pos <= clasifican:
             clases.append('qual')
-        if i == clasifican:
+        if pos == clasifican:
             clases.append('cut')
         filas += f"""
         <tr class="{' '.join(clases)}">
-          <td class="rank">{i}</td>
+          <td class="rank">{rank}</td>
           <td class="left">{s['nombre']}</td>
           <td>{s['jornadas']}</td>
           <td>{s['bonus']}</td>
