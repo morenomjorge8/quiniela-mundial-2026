@@ -224,6 +224,15 @@ Al hacer cualquier cambio, correr `py -m pytest tests/` antes de operar la jorna
 
 La web pública vive en `docs/` y la sirve GitHub Pages desde la rama `main`, carpeta `/docs`.
 
+### ⚡ Atajo: actualizar y publicar con un solo comando
+```powershell
+py actualizar.py 1     # J1: lee resultados del Excel, re-evalúa, regenera y publica (commit+push)
+py actualizar.py       # solo regenera la portada (tras editar data/entregas.json) y publica
+```
+`actualizar.py` hace todo el flujo de abajo de una. Solo necesitas tener actualizado el
+Excel ("Respuesta" para resultados) o `data/entregas.json` (quién envió el form) antes de correrlo.
+El resto de esta sección explica los pasos manuales que ese script automatiza.
+
 - **Portada** `docs/index.html`: tabla general acumulada + navegación de jornadas + botón
   para llenar el form de la próxima jornada. Se reconstruye sola al correr una jornada real
   (`py reports/generar_reporte.py N`), o a mano con:
