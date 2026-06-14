@@ -61,6 +61,9 @@ def exportar(jornada):
         for r in rows[1:]:
             if len(r) <= col_nombre or r[col_nombre] in (None, ''):
                 continue
+            # La fila "Respuesta" son los resultados reales, no un participante.
+            if str(r[col_nombre]).strip().lower() == 'respuesta':
+                continue
             w.writerow([('' if c is None else c) for c in r])
             n += 1
 

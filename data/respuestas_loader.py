@@ -142,10 +142,11 @@ def cargar_respuestas(
 
     # Quedarnos con la última respuesta de cada participante (orden de aparición en CSV).
     # El nombre se normaliza vía ALIAS para que variantes mapeen a la misma persona.
+    # Se ignora la fila "Respuesta" (los resultados reales viven en la misma hoja).
     por_participante: dict[str, dict] = {}
     for fila in filas:
         nombre = normalizar_nombre(fila.get(col_nombre))
-        if not nombre:
+        if not nombre or nombre.lower() == 'respuesta':
             continue
         por_participante[nombre] = fila
 
