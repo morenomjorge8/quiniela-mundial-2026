@@ -66,7 +66,13 @@ def main():
         print("  (sin cambios nuevos; reviso si hay commits pendientes por subir)")
     _run(['git', 'push'], check=True)
 
-    print("\n✅ Listo. Refresca la página con Ctrl+F5 (o agrega ?v=algo a la URL).")
+    # Links listos para compartir con ?v=<timestamp> (siempre saltan el caché)
+    base = "https://morenomjorge8.github.io/quiniela-mundial-2026"
+    v = datetime.datetime.now().strftime('%m%d%H%M')
+    print("\n✅ Publicado. Comparte estos links (ya saltan el caché):")
+    print(f"   Tabla:    {base}/?v={v}")
+    if jornada is not None:
+        print(f"   Jornada {jornada}: {base}/jornada_{jornada}.html?v={v}")
 
 
 if __name__ == '__main__':

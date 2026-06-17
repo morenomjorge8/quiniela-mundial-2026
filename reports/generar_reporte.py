@@ -905,6 +905,7 @@ def _build_index_html(d: dict) -> str:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
   <title>Quiniela Mundial 2026</title>
   <style>{_CSS}{_CSS_SITIO}</style>
 </head>
@@ -943,6 +944,7 @@ def _build_html(d: dict) -> str:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
   <title>Quiniela J{d['jornada']} — Mundial 2026</title>
   <style>{_CSS}</style>
 </head>
