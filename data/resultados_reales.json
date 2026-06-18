@@ -38,9 +38,11 @@
     "total_penales": 2
   },
   "3": {
-    "resultados": {},
+    "resultados": {
+      "25": "1"
+    },
     "total_rojas": 0,
-    "total_penales": 0
+    "total_penales": 1
   },
   "4": {
     "resultados": {},
