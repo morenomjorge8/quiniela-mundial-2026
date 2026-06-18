@@ -194,6 +194,24 @@
   .match-result { font-size: 0.72rem; font-weight: 700; color: var(--verde); margin-top: 3px; }
   .match-fecha  { font-size: 0.68rem; font-weight: 700; color: var(--cyan); margin-top: 4px; }
 
+  /* ── Rojas y penales de la jornada ── */
+  .bonosj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .bonosj { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 11px; }
+  .bonosj-h { font-size: 0.82rem; font-weight: 800; color: var(--txt); margin-bottom: 8px;
+              padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+  .bonosj-h b { color: var(--dorado); font-size: 0.95rem; }
+  .bonosj-row { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0;
+                font-size: 0.8rem; border-bottom: 1px solid var(--border); }
+  .bonosj-row:last-child { border-bottom: none; }
+  .bv { flex-shrink: 0; min-width: 24px; text-align: center; font-weight: 900;
+        color: var(--gris); background: var(--bg); border: 1px solid var(--border);
+        border-radius: 6px; padding: 1px 5px; }
+  .bn { flex: 1; color: var(--txt2); line-height: 1.4; }
+  .bonosj-row.acerto .bv { color: #001018; background: var(--verde); border-color: var(--verde); }
+  .bonosj-row.acerto .bn { color: var(--verde); font-weight: 700; }
+  .bonosj-ok { color: var(--verde); font-weight: 800; font-size: 0.68rem; flex-shrink: 0; }
+  @media (max-width: 480px) { .bonosj-grid { grid-template-columns: 1fr; } }
+
   /* ── H2H ── */
   .h2h-item {
     display: flex; align-items: center;
@@ -462,6 +480,22 @@
           <div class="match-fecha">📅 Sábado 20 de junio</div>
           
         </div>
+  </div>
+</div>
+  
+<div class="card">
+  <div class="card-title">Rojas y penales de la jornada</div>
+  <div class="bonosj-grid">
+    
+    <div class="bonosj">
+      <div class="bonosj-h">🟥 Tarjetas rojas · Real: <b>3</b></div>
+      <div class="bonosj-row"><span class="bv">5</span><span class="bn">Llanos</span></div><div class="bonosj-row"><span class="bv">4</span><span class="bn">Pedro</span></div><div class="bonosj-row acerto"><span class="bv">3</span><span class="bn">Pablo</span><span class="bonosj-ok">✓ +2</span></div><div class="bonosj-row"><span class="bv">2</span><span class="bn">Jime, Pau, Toninho, Vicente</span></div><div class="bonosj-row"><span class="bv">1</span><span class="bn">Dani, Lucía, Row, Sof Orozco</span></div><div class="bonosj-row"><span class="bv">0</span><span class="bn">George, Sof</span></div>
+    </div>
+    
+    <div class="bonosj">
+      <div class="bonosj-h">🎯 Penales de falta · Real: <b>2</b></div>
+      <div class="bonosj-row"><span class="bv">6</span><span class="bn">Pau</span></div><div class="bonosj-row"><span class="bv">3</span><span class="bn">Jime, Llanos, Pedro</span></div><div class="bonosj-row acerto"><span class="bv">2</span><span class="bn">Dani, Lucía, Pablo, Sof Orozco</span><span class="bonosj-ok">✓ +2</span></div><div class="bonosj-row"><span class="bv">1</span><span class="bn">George, Row, Sof, Toninho, Vicente</span></div>
+    </div>
   </div>
 </div>
   

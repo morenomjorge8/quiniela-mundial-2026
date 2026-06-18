@@ -232,6 +232,24 @@ _CSS = """
   .match-result { font-size: 0.72rem; font-weight: 700; color: var(--verde); margin-top: 3px; }
   .match-fecha  { font-size: 0.68rem; font-weight: 700; color: var(--cyan); margin-top: 4px; }
 
+  /* ── Rojas y penales de la jornada ── */
+  .bonosj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .bonosj { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 11px; }
+  .bonosj-h { font-size: 0.82rem; font-weight: 800; color: var(--txt); margin-bottom: 8px;
+              padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+  .bonosj-h b { color: var(--dorado); font-size: 0.95rem; }
+  .bonosj-row { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0;
+                font-size: 0.8rem; border-bottom: 1px solid var(--border); }
+  .bonosj-row:last-child { border-bottom: none; }
+  .bv { flex-shrink: 0; min-width: 24px; text-align: center; font-weight: 900;
+        color: var(--gris); background: var(--bg); border: 1px solid var(--border);
+        border-radius: 6px; padding: 1px 5px; }
+  .bn { flex: 1; color: var(--txt2); line-height: 1.4; }
+  .bonosj-row.acerto .bv { color: #001018; background: var(--verde); border-color: var(--verde); }
+  .bonosj-row.acerto .bn { color: var(--verde); font-weight: 700; }
+  .bonosj-ok { color: var(--verde); font-weight: 800; font-size: 0.68rem; flex-shrink: 0; }
+  @media (max-width: 480px) { .bonosj-grid { grid-template-columns: 1fr; } }
+
   /* ── H2H ── */
   .h2h-item {
     display: flex; align-items: center;
@@ -634,6 +652,40 @@ def _section_partidos(partidos):
 </div>"""
 
 
+def _bonosj_bloque(titulo, ic, preds_por_valor, real):
+    filas = ''
+    for val in sorted(preds_por_valor, reverse=True):
+        nombres = ', '.join(sorted(preds_por_valor[val], key=str.lower))
+        acerto = (real is not None and val == real)
+        ok = '<span class="bonosj-ok">✓ +2</span>' if acerto else ''
+        filas += (f'<div class="bonosj-row{" acerto" if acerto else ""}">'
+                  f'<span class="bv">{val}</span><span class="bn">{nombres}</span>{ok}</div>')
+    real_txt = real if real is not None else '—'
+    return f"""
+    <div class="bonosj">
+      <div class="bonosj-h">{ic} {titulo} · Real: <b>{real_txt}</b></div>
+      {filas}
+    </div>"""
+
+
+def _section_bonos_jornada(bonus_preds, rojas_real, penales_real):
+    """Predicciones de rojas/penales de cada persona, resaltando el resultado real."""
+    if not bonus_preds:
+        return ''
+    rojas, penales = {}, {}
+    for b in bonus_preds:
+        rojas.setdefault(b.total_rojas, []).append(b.participante)
+        penales.setdefault(b.total_penales, []).append(b.participante)
+    return f"""
+<div class="card">
+  <div class="card-title">Rojas y penales de la jornada</div>
+  <div class="bonosj-grid">
+    {_bonosj_bloque('Tarjetas rojas', '🟥', rojas, rojas_real)}
+    {_bonosj_bloque('Penales de falta', '🎯', penales, penales_real)}
+  </div>
+</div>"""
+
+
 def _section_jornada(resultados_j, imagenes):
     """Ranking de los puntos de ESTA jornada (no acumulado)."""
     items = ''
@@ -935,6 +987,7 @@ def _build_html(d: dict) -> str:
                       [s['nombre'] for s in d['tabla']])
     btn     = _btn_form(d['form_url'])
     part    = _section_partidos(d['partidos'])
+    bonos   = _section_bonos_jornada(d['bonus_preds'], d['rojas_real'], d['penales_real'])
     jornada = _section_jornada(d['resultados_j'], imgs)
     tabla   = _section_tabla(d['tabla'], d['resultados_j'])
     foot    = _footer()
@@ -953,6 +1006,7 @@ def _build_html(d: dict) -> str:
 <div class="wrap">
   {btn}
   {part}
+  {bonos}
   {jornada}
   {tabla}
 </div>
@@ -998,6 +1052,9 @@ def generar(
         'partidos':      partidos_j,
         'resultados_j':  estado['resultados_j'],
         'tabla':         estado['tabla'],
+        'bonus_preds':   estado['bonus_preds'],
+        'rojas_real':    estado['total_rojas_real'],
+        'penales_real':  estado['total_penales_real'],
         'imagenes':      _cargar_imagenes(),
     }
 
