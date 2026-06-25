@@ -71,9 +71,14 @@
     "total_penales": 1
   },
   "5": {
-    "resultados": {},
-    "total_rojas": 0,
-    "total_penales": 0
+    "resultados": {
+      "49": "2",
+      "50": "1",
+      "51": "2",
+      "52": "1",
+      "53": "2",
+      "54": "X"
+    }
   },
   "6": {
     "resultados": {},

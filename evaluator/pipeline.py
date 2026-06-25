@@ -25,10 +25,14 @@ RESPUESTAS_DIR = os.path.join(
 def cargar_resultados_reales(
     jornada: int,
     ruta: str = RESULTADOS_REALES_PATH,
-) -> tuple[dict[int, Resultado], int, int]:
-    """Devuelve (mapa partido→Resultado, total_rojas, total_penales) para la jornada."""
+) -> tuple[dict[int, Resultado], int | None, int | None]:
+    """Devuelve (mapa partido→Resultado, total_rojas, total_penales) para la jornada.
+
+    Si los totales de rojas/penales no están definidos (None), el bonus queda
+    pendiente (nadie lo recibe) — útil mientras la jornada está en curso.
+    """
     if not os.path.exists(ruta):
-        return {}, 0, 0
+        return {}, None, None
     with open(ruta, 'r', encoding='utf-8') as f:
         data = json.load(f)
     entrada = data.get(str(jornada), {})
@@ -37,10 +41,12 @@ def cargar_resultados_reales(
         int(num): Resultado(valor)
         for num, valor in resultados_raw.items()
     }
+    rojas = entrada.get('total_rojas', None)
+    penales = entrada.get('total_penales', None)
     return (
         resultados,
-        int(entrada.get('total_rojas', 0)),
-        int(entrada.get('total_penales', 0)),
+        int(rojas) if rojas is not None else None,
+        int(penales) if penales is not None else None,
     )
 
 
