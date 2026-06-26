@@ -478,6 +478,31 @@ _CSS_SITIO = """
     font-size: 0.74rem; color: var(--verde); font-weight: 700;
     margin: -4px 0 12px;
   }
+
+  /* ── Playoffs (bracket) ── */
+  .po-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(135deg, #7218a8 0%, #c026d3 100%);
+    color: #fff; text-decoration: none; font-weight: 800; letter-spacing: 0.5px;
+    padding: 13px 18px; border-radius: 10px; margin-bottom: 14px;
+    box-shadow: 0 4px 18px rgba(192,38,211,0.3);
+  }
+  .po-sub { color: var(--txt2); font-size: 0.84rem; margin: -4px 0 12px; }
+  .po-ronda { margin-bottom: 14px; }
+  .po-ronda-h {
+    font-size: 0.66rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: 8px;
+  }
+  .po-cruce { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+              padding: 6px 8px; margin-bottom: 8px; }
+  .po-slot { display: flex; align-items: center; gap: 8px; padding: 5px 2px; }
+  .po-seed { font-size: 0.7rem; font-weight: 800; color: var(--gris); min-width: 26px; }
+  .po-name { font-size: 0.85rem; font-weight: 700; color: var(--txt); }
+  .po-slot.po-tbd { padding-left: 8px; }
+  .po-slot.po-tbd .po-name { color: var(--txt2); font-weight: 600; font-style: italic; font-size: 0.8rem; }
+  .po-vs { text-align: center; font-size: 0.6rem; font-weight: 800; color: var(--gris);
+           letter-spacing: 1px; padding: 1px 0; }
+  .po-prize { color: var(--dorado); font-weight: 800; }
   /* Marca de "ya envió el form" */
   .part-card.entregado {
     border-color: rgba(46,213,115,0.55);
@@ -965,6 +990,7 @@ def _build_index_html(d: dict) -> str:
 {head}
 <div class="wrap">
   {cta}
+  <a class="po-btn" href="playoffs.html">🏆 Ver Playoffs (proyección) 💩</a>
   {intro}
   {como}
   {reglas}
@@ -1071,6 +1097,112 @@ def generar(
     return ruta
 
 
+def _po_slot(slot, seeds, imagenes):
+    """Un casillero del bracket: participante sembrado (con seed+avatar) o placeholder."""
+    if slot in seeds:
+        seed = seeds.index(slot) + 1
+        av = _get_avatar(slot, imagenes, 'avatar')
+        return f'<div class="po-slot"><span class="po-seed">{seed}°</span>{av}<span class="po-name">{slot}</span></div>'
+    return f'<div class="po-slot po-tbd"><span class="po-name">{slot}</span></div>'
+
+
+def _po_ronda(nombre, cruces, seeds, imagenes):
+    cards = ''
+    for a, b in cruces:
+        cards += (f'<div class="po-cruce">{_po_slot(a, seeds, imagenes)}'
+                  f'<div class="po-vs">vs</div>{_po_slot(b, seeds, imagenes)}</div>')
+    return f'<div class="po-ronda"><div class="po-ronda-h">{nombre}</div>{cards}</div>'
+
+
+def _po_bracket(titulo, sub, rondas, seeds, imagenes):
+    rondas_html = ''.join(_po_ronda(n, c, seeds, imagenes) for n, c in rondas)
+    return f"""
+<div class="card">
+  <div class="card-title">{titulo}</div>
+  <p class="po-sub">{sub}</p>
+  {rondas_html}
+</div>"""
+
+
+def _section_reglas_playoff():
+    return """
+<div class="card">
+  <div class="card-title">Cómo funcionan los Playoffs</div>
+  <div class="info-ico-list">
+    <div class="info-item"><span class="info-ic">🏆</span><div><b>Llave de Campeones</b> (lugares 1–6): pelean por <b>1° $115</b>, <b>2° $60</b>, <b>3° $20</b>.</div></div>
+    <div class="info-item"><span class="info-ic">💩</span><div><b>Llave del Sótano</b> (lugares 7–13): el objetivo es <b>NO quedar último</b>. El que pierde la final del sótano es "el peor".</div></div>
+    <div class="info-item"><span class="info-ic">⚔️</span><div>Son <b>enfrentamientos directos</b>: en cada ronda avanza quien hace más puntos esa jornada (empate → mejor sembrado).</div></div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-title">Puntos en Playoffs (al minuto 90)</div>
+  <div class="info-ico-list">
+    <div class="info-item"><span class="info-ic">🎯</span><div><b>+3</b> si atinas el <b>marcador exacto</b> (ej. 2–1).</div></div>
+    <div class="info-item"><span class="info-ic">✅</span><div><b>+2</b> si atinas solo el resultado (gana uno / empate) — sin el marcador.</div></div>
+    <div class="info-item"><span class="info-ic">⚽</span><div><b>+1</b> si aciertas <b>qué equipo mete el primer gol</b> (si es 0–0, nadie lo gana).</div></div>
+    <div class="info-item"><span class="info-ic">📏</span><div>Marcador al <b>minuto 90</b> (sin prórroga ni penales). Máximo <b>4 pts</b> por partido.</div></div>
+  </div>
+</div>"""
+
+
+def _build_playoffs_html(seeds, disp, imagenes):
+    head = _site_header('Playoffs · proyección', imagenes, seeds)
+    reglas = _section_reglas_playoff()
+    campeones = _po_bracket(
+        '🏆 Llave de Campeones (1°–6°)',
+        'Por los premios. Bye para 1° y 2°. <span class="po-prize">1° $115 · 2° $60 · 3° $20</span>',
+        disp['campeones'], seeds, imagenes,
+    )
+    sotano = _po_bracket(
+        '💩 Llave del Sótano (7°–13°)',
+        'Para no quedar último. Bye para 7° y 8°. El que pierde la final es <b>el peor</b> 😈',
+        disp['sotano'], seeds, imagenes,
+    )
+    nota = ('<div class="card"><p class="po-sub">⚠️ Es una <b>proyección con la tabla de '
+            'ahorita</b>. La siembra real se fija al terminar la Jornada 6.</p></div>')
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+  <title>Playoffs — Quiniela Mundial 2026</title>
+  <style>{_CSS}{_CSS_SITIO}</style>
+</head>
+<body>
+{head}
+<div class="wrap">
+  <a class="btn-form" href="index.html">← Volver a la tabla</a>
+  {nota}
+  {reglas}
+  {campeones}
+  {sotano}
+</div>
+{_footer()}
+</body>
+</html>"""
+
+
+def construir_playoffs() -> str | None:
+    """Genera docs/playoffs.html con las dos llaves sembradas con la tabla actual."""
+    from data.loader import cargar_participantes
+    from data.historial_io import cargar_historial_resultados
+    from quiniela.standings import calcular_tabla_general
+    from quiniela.playoffs import sembrar, bracket_display
+
+    tabla = calcular_tabla_general(cargar_participantes(), cargar_historial_resultados())
+    seeds = sembrar(tabla)
+    if len(seeds) < 13:
+        return None
+
+    html = _build_playoffs_html(seeds, bracket_display(seeds), _cargar_imagenes())
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    ruta = os.path.join(OUTPUT_DIR, 'playoffs.html')
+    with open(ruta, 'w', encoding='utf-8') as f:
+        f.write(html)
+    return ruta
+
+
 def construir_index() -> str:
     """
     Reconstruye docs/index.html (portada): tabla general acumulada del historial
@@ -1134,6 +1266,8 @@ def construir_index() -> str:
         f.write(html)
     # .nojekyll evita que GitHub Pages procese el sitio con Jekyll.
     open(os.path.join(OUTPUT_DIR, '.nojekyll'), 'w').close()
+    # Página de playoffs (proyección con la tabla actual).
+    construir_playoffs()
     return ruta
 
 
