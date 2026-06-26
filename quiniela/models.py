@@ -40,6 +40,25 @@ class BonusPrediccion:
 
 
 @dataclass
+class PrediccionPlayoff:
+    """Predicción de un partido de playoff (marcador al minuto 90 + primer gol)."""
+    participante: str
+    partido_numero: int
+    goles_local: int
+    goles_visitante: int
+    primer_gol: str  # 'L' (local) o 'V' (visitante) — qué equipo mete el primer gol
+
+
+@dataclass
+class ResultadoPlayoff:
+    """Resultado real de un partido de playoff (al minuto 90, sin prórroga/penales)."""
+    partido_numero: int
+    goles_local: int
+    goles_visitante: int
+    primer_gol: Optional[str] = None  # 'L', 'V', o None si terminó 0-0
+
+
+@dataclass
 class ResultadoJornada:
     participante: str
     jornada: int
