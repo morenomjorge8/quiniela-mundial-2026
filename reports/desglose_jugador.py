@@ -10,6 +10,7 @@ Uso:
     py reports/desglose_jugador.py            # default: George, Row, Jime
 """
 import os
+import re
 import sys
 import webbrowser
 
@@ -55,6 +56,10 @@ _CSS = """
   .bonus{margin-top:6px;font-size:.76rem;color:var(--txt2);}
   .bonus b{color:var(--txt);}
   .bonus .ok{color:var(--verde);font-weight:800;} .bonus .no{color:var(--gris);}
+  .jug-resumen{margin-top:14px;padding:12px;border-radius:10px;font-size:.86rem;line-height:1.5;
+    background:linear-gradient(180deg,rgba(0,212,255,.1),rgba(0,212,255,.03));border:1px solid rgba(0,212,255,.3);}
+  .jug-resumen b{color:var(--cyan);}
+  .jug-resumen .jr-tot{display:block;margin-top:4px;font-weight:900;color:var(--dorado);font-size:1rem;}
   .foot{text-align:center;color:var(--gris);font-size:.72rem;padding:10px;}
   @media print{@page{size:A4;margin:0;}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 """
@@ -95,6 +100,7 @@ def _cargar_datos():
 
 def _seccion_jugador(nombre, datos):
     total = 0
+    aciertos = jugados = bonus_total = 0
     jornadas_html = ''
     for j in JORNADAS:
         d = datos[j]
@@ -116,6 +122,8 @@ def _seccion_jugador(nombre, datos):
                 pts, cls, rowcls = '—', 'na', ''
             if isinstance(pts, int):
                 sub += pts
+                jugados += 1
+                aciertos += pts
             filas += (f'<tr class="{rowcls}"><td class="num">#{p.numero}</td>'
                       f'<td>{p.local} vs {p.visitante}</td>'
                       f'<td class="pred">{_etiqueta(pred, p)}</td>'
@@ -137,6 +145,7 @@ def _seccion_jugador(nombre, datos):
             txt_r, p_r = _b('🟥 Rojas', bonus.total_rojas, d['rojas'], 2)
             txt_p, p_p = _b('🎯 Penales', bonus.total_penales, d['penales'], 2)
             sub += p_r + p_p
+            bonus_total += p_r + p_p
             bonus_html = f'<div class="bonus">{txt_r} &nbsp;·&nbsp; {txt_p}</div>'
 
         total += sub
@@ -150,33 +159,55 @@ def _seccion_jugador(nombre, datos):
       {bonus_html}
     </div>"""
 
+    resumen = (
+        f'<div class="jug-resumen">✅ <b>{nombre}</b> atinó '
+        f'<b>{aciertos} de {jugados}</b> partidos = <b>{aciertos} pts</b>, '
+        f'y consiguió <b>+{bonus_total} pts</b> extra por bonos (rojas y penales). '
+        f'<span class="jr-tot">Total: {total} pts</span></div>'
+    )
     return f"""
   <div class="jug">
     <div class="jug-h"><span class="jug-nm">{nombre}</span><span class="jug-tot">{total} pts</span></div>
     {jornadas_html}
+    {resumen}
   </div>"""
 
 
-def generar(nombres):
-    datos = _cargar_datos()
-    secciones = ''.join(_seccion_jugador(n, datos) for n in nombres)
-    html = f"""<!DOCTYPE html>
+def _slug(nombre):
+    return re.sub(r'[^a-z0-9]+', '_', nombre.lower()).strip('_')
+
+
+def _envolver(titulo, sub, cuerpo):
+    return f"""<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Desglose — Quiniela Mundial 2026</title><style>{_CSS}</style></head>
+<title>Desglose {titulo} — Quiniela Mundial 2026</title><style>{_CSS}</style></head>
 <body>
 <header class="hdr">
-  <div class="hdr-title">Desglose de puntos</div>
-  <div class="hdr-sub">{', '.join(nombres)} · predicciones y resultados, jornada por jornada</div>
+  <div class="hdr-title">Desglose · {titulo}</div>
+  <div class="hdr-sub">{sub}</div>
 </header>
-<div class="wrap">{secciones}</div>
+<div class="wrap">{cuerpo}</div>
 <div class="foot">Quiniela Mundial 2026 — desglose</div>
 </body></html>"""
+
+
+def generar(nombres):
+    """Genera UN archivo por jugador (para enviar individualmente).
+
+    Devuelve la lista de rutas generadas.
+    """
+    datos = _cargar_datos()
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    ruta = os.path.join(OUTPUT_DIR, 'desglose.html')
-    with open(ruta, 'w', encoding='utf-8') as f:
-        f.write(html)
-    return ruta
+    rutas = []
+    for nombre in nombres:
+        cuerpo = _seccion_jugador(nombre, datos)
+        html = _envolver(nombre, 'Predicciones y resultados, jornada por jornada', cuerpo)
+        ruta = os.path.join(OUTPUT_DIR, f'desglose_{_slug(nombre)}.html')
+        with open(ruta, 'w', encoding='utf-8') as f:
+            f.write(html)
+        rutas.append(ruta)
+    return rutas
 
 
 if __name__ == '__main__':
@@ -184,8 +215,14 @@ if __name__ == '__main__':
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     except AttributeError:
         pass
-    nombres = sys.argv[1:] or ['George', 'Row', 'Jime']
-    ruta = generar(nombres)
-    print(f'Desglose generado: {ruta}')
-    print('Para PDF: ábrelo y Ctrl+P → "Guardar como PDF" (activa Gráficos de fondo).')
-    webbrowser.open(f'file:///{ruta.replace(os.sep, "/")}')
+    nombres = sys.argv[1:]
+    if not nombres:
+        from data.loader import PARTICIPANTES
+        nombres = list(PARTICIPANTES)
+
+    rutas = generar(nombres)
+    print(f'{len(rutas)} desglose(s) generado(s) en {OUTPUT_DIR}:')
+    for r in rutas:
+        print('   ', os.path.basename(r))
+    print('Para PDF: abre cada uno y Ctrl+P → "Guardar como PDF" (activa Gráficos de fondo).')
+    webbrowser.open(f'file:///{rutas[0].replace(os.sep, "/")}')
