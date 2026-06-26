@@ -490,15 +490,16 @@ _CSS_SITIO = """
   .po-sub { color: var(--txt2); font-size: 0.84rem; margin: -4px 0 12px; line-height: 1.5; }
   /* Bracket: rondas en columnas, scroll horizontal en pantallas chicas */
   .po-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
-  .po-rounds { display: flex; gap: 16px; min-width: min-content; align-items: stretch; }
-  .po-ronda { min-width: 162px; flex-shrink: 0; display: flex; flex-direction: column; }
+  .po-rounds { display: flex; gap: 12px; align-items: stretch; }
+  .po-ronda { flex: 1 1 0; min-width: 150px; display: flex; flex-direction: column; }
   .po-ronda-h {
     font-size: 0.64rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
     color: var(--cyan); margin-bottom: 10px; text-align: center;
   }
   .po-ronda-body { display: flex; flex-direction: column; justify-content: space-around; flex: 1; gap: 10px; }
-  .po-cruce { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 5px 7px; }
-  .po-slot { display: flex; align-items: center; gap: 7px; padding: 5px 2px; }
+  .po-cruce { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; }
+  .po-3er { margin-top: 12px; }
+  .po-slot { display: flex; align-items: center; gap: 8px; padding: 6px 2px; }
   .po-slot + .po-slot { border-top: 1px dashed var(--border); }
   .po-seed { font-size: 0.68rem; font-weight: 800; color: var(--gris); min-width: 24px; }
   .po-slot .avatar, .po-slot .avatar-ph { width: 26px; height: 26px; margin-right: 0; }
@@ -1123,14 +1124,22 @@ def _po_ronda(nombre, cruces, seeds, imagenes):
             f'<div class="po-ronda-body">{cards}</div></div>')
 
 
-def _po_bracket(titulo, sub, rondas, seeds, imagenes):
+def _po_bracket(titulo, sub, rondas, seeds, imagenes, extra=''):
     cols = ''.join(_po_ronda(n, c, seeds, imagenes) for n, c in rondas)
     return f"""
 <div class="card">
   <div class="card-title">{titulo}</div>
   <p class="po-sub">{sub}</p>
   <div class="po-scroll"><div class="po-rounds">{cols}</div></div>
+  {extra}
 </div>"""
+
+
+def _po_cruce_suelto(label, a, b, seeds, imagenes):
+    """Un cruce aparte (ej. el juego por el 3er lugar)."""
+    return (f'<div class="po-3er"><div class="po-ronda-h">{label}</div>'
+            f'<div class="po-cruce">{_po_slot(a, seeds, imagenes)}'
+            f'{_po_slot(b, seeds, imagenes)}</div></div>')
 
 
 def _section_reglas_playoff():
@@ -1150,6 +1159,8 @@ def _section_reglas_playoff():
     <div class="info-item"><span class="info-ic">✅</span><div><b>+2</b> si atinas solo el resultado (gana uno / empate) — sin el marcador.</div></div>
     <div class="info-item"><span class="info-ic">⚽</span><div><b>+1</b> si aciertas <b>qué equipo mete el primer gol</b> (si es 0–0, nadie lo gana).</div></div>
     <div class="info-item"><span class="info-ic">📏</span><div>Marcador al <b>minuto 90</b> (sin prórroga ni penales). Máximo <b>4 pts</b> por partido.</div></div>
+    <div class="info-item"><span class="info-ic">🟥</span><div><b>+2</b> si aciertas el total de <b>tarjetas rojas</b> de la jornada.</div></div>
+    <div class="info-item"><span class="info-ic">🎯</span><div><b>+2</b> si aciertas el total de <b>penales de falta</b> de la jornada.</div></div>
   </div>
 </div>"""
 
@@ -1157,10 +1168,12 @@ def _section_reglas_playoff():
 def _build_playoffs_html(seeds, disp, imagenes):
     head = _site_header('Playoffs · proyección', imagenes, seeds)
     reglas = _section_reglas_playoff()
+    a3, b3 = disp['campeones_3er']
+    tercer = _po_cruce_suelto('🥉 Juego por el 3er lugar ($20)', a3, b3, seeds, imagenes)
     campeones = _po_bracket(
         '🏆 Llave de Campeones (1°–6°)',
         'Por los premios. Bye para 1° y 2°. <span class="po-prize">1° $115 · 2° $60 · 3° $20</span>',
-        disp['campeones'], seeds, imagenes,
+        disp['campeones'], seeds, imagenes, extra=tercer,
     )
     sotano = _po_bracket(
         '💩 Toilet Playoffs (7°–13°)',

@@ -9,6 +9,9 @@
 //   Solo resultado (1/X/2) ..... 2 pts
 //   Acertar el primer gol ...... +1 pt   (si el partido es 0-0, ese punto no lo gana nadie)
 //   Máximo 4 pts por partido.
+// Bonos de la ronda (igual que la fase regular):
+//   Total de tarjetas rojas exacto ... +2 pts
+//   Total de penales de falta exacto . +2 pts
 //
 // INSTRUCCIONES:
 //   1. Ve a https://script.google.com  → "Nuevo proyecto"
@@ -139,6 +142,22 @@ function crearFormRonda(ronda, carpeta, ss) {
     ]);
     pg.setRequired(true);
   });
+
+  // --- Bonos de la ronda (rojas y penales, +2 c/u) ---
+  form.addSectionHeaderItem()
+    .setTitle('Bonos de la ronda (+2 puntos cada uno)')
+    .setHelpText('Predice el total para TODA la ronda (suma de los ' +
+                 ronda.partidos.length + ' partidos). Las tandas de penales NO cuentan.');
+
+  form.addTextItem()
+    .setTitle('Total de tarjetas ROJAS en la ronda')
+    .setValidation(valGoles)
+    .setRequired(true);
+
+  form.addTextItem()
+    .setTitle('Total de PENALES de falta en la ronda (no incluye tandas)')
+    .setValidation(valGoles)
+    .setRequired(true);
 
   // --- Vincular al spreadsheet ---
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());

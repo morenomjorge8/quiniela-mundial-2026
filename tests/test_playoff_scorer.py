@@ -1,5 +1,5 @@
 """Tests del scoring de playoffs (marcador exacto / resultado / primer gol)."""
-from quiniela.models import PrediccionPlayoff, ResultadoPlayoff
+from quiniela.models import PrediccionPlayoff, ResultadoPlayoff, BonusPrediccion
 from quiniela.playoff_scorer import puntos_partido, puntos_ronda
 
 
@@ -64,3 +64,23 @@ def test_puntos_ronda_suma_por_participante():
     assert pts['Ana'] == 4 + 3
     assert pts['Beto'] == 1   # solo el +1 del primer gol
     assert pts['Cyn'] == 0    # sin predicciones
+
+
+def test_puntos_ronda_con_bonus_rojas_y_penales():
+    preds = [_pred(2, 1, 'L', 'Ana', 1)]   # exacto + primer gol = 4
+    reales = {1: _real(2, 1, 'L', 1)}
+    bonus = [BonusPrediccion('Ana', 7, total_rojas=3, total_penales=1),
+             BonusPrediccion('Beto', 7, total_rojas=2, total_penales=2)]
+    pts = puntos_ronda(preds, reales, ['Ana', 'Beto'], bonus,
+                       total_rojas_real=3, total_penales_real=2)
+    # Ana: 4 (partido) + 2 (rojas 3=3) + 0 (penales 1≠2) = 6
+    assert pts['Ana'] == 6
+    # Beto: 0 (partido) + 0 (rojas 2≠3) + 2 (penales 2=2) = 2
+    assert pts['Beto'] == 2
+
+
+def test_puntos_ronda_bonus_pendiente_si_totales_none():
+    bonus = [BonusPrediccion('Ana', 7, total_rojas=0, total_penales=0)]
+    pts = puntos_ronda([], {}, ['Ana'], bonus,
+                       total_rojas_real=None, total_penales_real=None)
+    assert pts['Ana'] == 0  # sin totales reales, el bonus queda pendiente

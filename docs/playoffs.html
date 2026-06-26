@@ -449,15 +449,16 @@
   .po-sub { color: var(--txt2); font-size: 0.84rem; margin: -4px 0 12px; line-height: 1.5; }
   /* Bracket: rondas en columnas, scroll horizontal en pantallas chicas */
   .po-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
-  .po-rounds { display: flex; gap: 16px; min-width: min-content; align-items: stretch; }
-  .po-ronda { min-width: 162px; flex-shrink: 0; display: flex; flex-direction: column; }
+  .po-rounds { display: flex; gap: 12px; align-items: stretch; }
+  .po-ronda { flex: 1 1 0; min-width: 150px; display: flex; flex-direction: column; }
   .po-ronda-h {
     font-size: 0.64rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
     color: var(--cyan); margin-bottom: 10px; text-align: center;
   }
   .po-ronda-body { display: flex; flex-direction: column; justify-content: space-around; flex: 1; gap: 10px; }
-  .po-cruce { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 5px 7px; }
-  .po-slot { display: flex; align-items: center; gap: 7px; padding: 5px 2px; }
+  .po-cruce { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; }
+  .po-3er { margin-top: 12px; }
+  .po-slot { display: flex; align-items: center; gap: 8px; padding: 6px 2px; }
   .po-slot + .po-slot { border-top: 1px dashed var(--border); }
   .po-seed { font-size: 0.68rem; font-weight: 800; color: var(--gris); min-width: 24px; }
   .po-slot .avatar, .po-slot .avatar-ph { width: 26px; height: 26px; margin-right: 0; }
@@ -515,19 +516,23 @@
     <div class="info-item"><span class="info-ic">✅</span><div><b>+2</b> si atinas solo el resultado (gana uno / empate) — sin el marcador.</div></div>
     <div class="info-item"><span class="info-ic">⚽</span><div><b>+1</b> si aciertas <b>qué equipo mete el primer gol</b> (si es 0–0, nadie lo gana).</div></div>
     <div class="info-item"><span class="info-ic">📏</span><div>Marcador al <b>minuto 90</b> (sin prórroga ni penales). Máximo <b>4 pts</b> por partido.</div></div>
+    <div class="info-item"><span class="info-ic">🟥</span><div><b>+2</b> si aciertas el total de <b>tarjetas rojas</b> de la jornada.</div></div>
+    <div class="info-item"><span class="info-ic">🎯</span><div><b>+2</b> si aciertas el total de <b>penales de falta</b> de la jornada.</div></div>
   </div>
 </div>
   
 <div class="card">
   <div class="card-title">🏆 Llave de Campeones (1°–6°)</div>
   <p class="po-sub">Por los premios. Bye para 1° y 2°. <span class="po-prize">1° $115 · 2° $60 · 3° $20</span></p>
-  <div class="po-scroll"><div class="po-rounds"><div class="po-ronda"><div class="po-ronda-h">Cuartos</div><div class="po-ronda-body"><div class="po-cruce"><div class="po-slot"><span class="po-seed">3°</span><img class="avatar" src="img/11_MX_GEORGE_VF_B.png" alt="George"><span class="po-name">George</span></div><div class="po-slot"><span class="po-seed">6°</span><img class="avatar" src="img/09_sof_mx2.png" alt="Sof"><span class="po-name">Sof</span></div></div><div class="po-cruce"><div class="po-slot"><span class="po-seed">4°</span><img class="avatar" src="img/12_mx_llanos_vf.png" alt="Llanos"><span class="po-name">Llanos</span></div><div class="po-slot"><span class="po-seed">5°</span><img class="avatar" src="img/04_LU_MX.png" alt="Lucía"><span class="po-name">Lucía</span></div></div></div></div><div class="po-ronda"><div class="po-ronda-h">Semifinales</div><div class="po-ronda-body"><div class="po-cruce"><div class="po-slot"><span class="po-seed">1°</span><img class="avatar" src="img/10_PEDRO_MX.png" alt="Pedro"><span class="po-name">Pedro</span></div><div class="po-slot po-tbd"><span class="po-name">Ganador 4°v5°</span></div></div><div class="po-cruce"><div class="po-slot"><span class="po-seed">2°</span><img class="avatar" src="img/03_MX_JIMENA_VF.png" alt="Jime"><span class="po-name">Jime</span></div><div class="po-slot po-tbd"><span class="po-name">Ganador 3°v6°</span></div></div></div></div><div class="po-ronda"><div class="po-ronda-h">Final</div><div class="po-ronda-body"><div class="po-cruce"><div class="po-slot po-tbd"><span class="po-name">Ganador Semifinal A</span></div><div class="po-slot po-tbd"><span class="po-name">Ganador Semifinal B</span></div></div></div></div><div class="po-ronda"><div class="po-ronda-h">3er lugar</div><div class="po-ronda-body"><div class="po-cruce"><div class="po-slot po-tbd"><span class="po-name">Perdedor Semifinal A</span></div><div class="po-slot po-tbd"><span class="po-name">Perdedor Semifinal B</span></div></div></div></div></div></div>
+  <div class="po-scroll"><div class="po-rounds"><div class="po-ronda"><div class="po-ronda-h">Cuartos</div><div class="po-ronda-body"><div class="po-cruce"><div class="po-slot"><span class="po-seed">3°</span><img class="avatar" src="img/11_MX_GEORGE_VF_B.png" alt="George"><span class="po-name">George</span></div><div class="po-slot"><span class="po-seed">6°</span><img class="avatar" src="img/09_sof_mx2.png" alt="Sof"><span class="po-name">Sof</span></div></div><div class="po-cruce"><div class="po-slot"><span class="po-seed">4°</span><img class="avatar" src="img/12_mx_llanos_vf.png" alt="Llanos"><span class="po-name">Llanos</span></div><div class="po-slot"><span class="po-seed">5°</span><img class="avatar" src="img/04_LU_MX.png" alt="Lucía"><span class="po-name">Lucía</span></div></div></div></div><div class="po-ronda"><div class="po-ronda-h">Semifinales</div><div class="po-ronda-body"><div class="po-cruce"><div class="po-slot"><span class="po-seed">1°</span><img class="avatar" src="img/10_PEDRO_MX.png" alt="Pedro"><span class="po-name">Pedro</span></div><div class="po-slot po-tbd"><span class="po-name">Ganador 4°v5°</span></div></div><div class="po-cruce"><div class="po-slot"><span class="po-seed">2°</span><img class="avatar" src="img/03_MX_JIMENA_VF.png" alt="Jime"><span class="po-name">Jime</span></div><div class="po-slot po-tbd"><span class="po-name">Ganador 3°v6°</span></div></div></div></div><div class="po-ronda"><div class="po-ronda-h">Final</div><div class="po-ronda-body"><div class="po-cruce"><div class="po-slot po-tbd"><span class="po-name">Ganador Semifinal A</span></div><div class="po-slot po-tbd"><span class="po-name">Ganador Semifinal B</span></div></div></div></div></div></div>
+  <div class="po-3er"><div class="po-ronda-h">🥉 Juego por el 3er lugar ($20)</div><div class="po-cruce"><div class="po-slot po-tbd"><span class="po-name">Perdedor Semifinal A</span></div><div class="po-slot po-tbd"><span class="po-name">Perdedor Semifinal B</span></div></div></div>
 </div>
   
 <div class="card">
   <div class="card-title">💩 Toilet Playoffs (7°–13°)</div>
   <p class="po-sub">¿Quién es el peor de la quiniela? Bye para el 13°. El que pierde la <b>Poop Final</b> es <b>el peor</b> 😈</p>
   <div class="po-scroll"><div class="po-rounds"><div class="po-ronda"><div class="po-ronda-h">Cuartos</div><div class="po-ronda-body"><div class="po-cruce"><div class="po-slot"><span class="po-seed">7°</span><img class="avatar" src="img/08_pablo_co.png" alt="Pablo"><span class="po-name">Pablo</span></div><div class="po-slot"><span class="po-seed">12°</span><img class="avatar" src="img/02_CR_ROWLAND_VS.png" alt="Row"><span class="po-name">Row</span></div></div><div class="po-cruce"><div class="po-slot"><span class="po-seed">8°</span><img class="avatar" src="img/06_MX_SOF_OROZCO_VF.png" alt="Sof Orozco"><span class="po-name">Sof Orozco</span></div><div class="po-slot"><span class="po-seed">11°</span><img class="avatar" src="img/13_vicente_-removebg-preview.png" alt="Vicente"><span class="po-name">Vicente</span></div></div><div class="po-cruce"><div class="po-slot"><span class="po-seed">9°</span><img class="avatar" src="img/05_CL_TO%C3%91O_VF_B.png" alt="Toninho"><span class="po-name">Toninho</span></div><div class="po-slot"><span class="po-seed">10°</span><img class="avatar" src="img/07_DANI_MX.png" alt="Dani"><span class="po-name">Dani</span></div></div></div></div><div class="po-ronda"><div class="po-ronda-h">Semifinales</div><div class="po-ronda-body"><div class="po-cruce"><div class="po-slot"><span class="po-seed">13°</span><img class="avatar" src="img/01_paula_Ar.png" alt="Pau"><span class="po-name">Pau</span></div><div class="po-slot po-tbd"><span class="po-name">Perdedor 7°v12°</span></div></div><div class="po-cruce"><div class="po-slot po-tbd"><span class="po-name">Perdedor 8°v11°</span></div><div class="po-slot po-tbd"><span class="po-name">Perdedor 9°v10°</span></div></div></div></div><div class="po-ronda"><div class="po-ronda-h">Poop Final</div><div class="po-ronda-body"><div class="po-cruce"><div class="po-slot po-tbd"><span class="po-name">Perdedor Semifinal A</span></div><div class="po-slot po-tbd"><span class="po-name">Perdedor Semifinal B</span></div></div></div></div></div></div>
+  
 </div>
 </div>
 <div class="footer">QUINIELA MUNDIAL 2026 &nbsp;&nbsp;|&nbsp;&nbsp; Hecho con amor ⚽</div>
