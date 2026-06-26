@@ -10,12 +10,13 @@ Dos llaves, sembradas con la tabla general final (13 participantes):
      3er lugar: P(SF1) vs P(SF2)
      Avanza el que GANA el cruce (más puntos de playoff esa jornada).
 
-  💩 SÓTANO (lugares 7–13) — "toilet bowl" invertido, para NO ser el peor
-     Repechaje: 12 vs 13           (bye: 7, 8)
-     Cuartos:   9 vs P(rep), 10 vs 11
-     Semis:     7 vs P(10v11), 8 vs P(9vRep)
-     Final:     P(SF1) vs P(SF2)   → el que PIERDE es "el peor"
+  💩 SÓTANO ("Toilet Playoffs", lugares 7–13) — para NO ser el peor
+     Cuartos:   7 vs 12, 8 vs 11, 9 vs 10      (bye: 13)
+     Semis:     13 vs P(7v12),  P(8v11) vs P(9v10)
+     Final:     P(SF1) vs P(SF2)   → el que PIERDE es "el peor" (13er lugar)
      Aquí avanza el que PIERDE el cruce (cae hacia el fondo); el que gana se salva.
+     Lugares: ganadores de cuartos = 7°/8°/9°; ganadores de semis = 10°/11°;
+     ganador de la final = 12°; perdedor de la final = 13° (el peor).
 
 Cada cruce (H2H) lo gana quien hace más puntos de playoff esa jornada; empate →
 mejor sembrado (lugar más alto en la tabla final).
@@ -47,13 +48,13 @@ def bracket_display(seeds: list[str]) -> dict:
             ('Cuartos',     [(s[2], s[5]), (s[3], s[4])]),
             ('Semifinales', [(s[0], 'Ganador 4°v5°'), (s[1], 'Ganador 3°v6°')]),
             ('Final',       [('Ganador Semifinal A', 'Ganador Semifinal B')]),
-            ('3er lugar',   [('Perdedor Semifinal A', 'Perdedor Semifinal B')]),
         ],
+        'campeones_3er': ('Perdedor Semifinal A', 'Perdedor Semifinal B'),
         'sotano': [
-            ('Repechaje',   [(s[11], s[12])]),
-            ('Cuartos',     [(s[8], 'Pierde repechaje'), (s[9], s[10])]),
-            ('Semifinales', [(s[6], 'Pierde 10°v11°'), (s[7], 'Pierde 9°vRepe')]),
-            ('Final',       [('Pierde Semifinal A', 'Pierde Semifinal B')]),
+            ('Cuartos',     [(s[6], s[11]), (s[7], s[10]), (s[8], s[9])]),  # 7v12, 8v11, 9v10
+            ('Semifinales', [(s[12], 'Perdedor 7°v12°'),
+                             ('Perdedor 8°v11°', 'Perdedor 9°v10°')]),       # 13° (bye) vs P(7v12)
+            ('Poop Final',  [('Perdedor Semifinal A', 'Perdedor Semifinal B')]),
         ],
     }
 
@@ -85,27 +86,15 @@ def _campeones_final(gan, perd):
     return [('C-FINAL', gan['C-SF1'], gan['C-SF2']),
             ('C-3ER',   perd['C-SF1'], perd['C-SF2'])]
 
-def _sotano_repechaje(s):
-    return [('S-REP', s[11], s[12])]                                 # 12v13
+def _sotano_cuartos(s):
+    return [('S-CF1', s[6], s[11]), ('S-CF2', s[7], s[10]), ('S-CF3', s[8], s[9])]  # 7v12, 8v11, 9v10
 
-def _sotano_cuartos(s, perd):
-    rep = perd['S-REP']                                              # cae el que pierde el repechaje
-    return [('S-CF1', s[8], rep), ('S-CF2', s[9], s[10])]            # 9 vs P(rep), 10v11
-
-def _sotano_semis(s, perd):
-    return [('S-SF1', s[6], perd['S-CF2']), ('S-SF2', s[7], perd['S-CF1'])]
+def _sotano_semis(s, perd):                                          # avanza el que PIERDE
+    return [('S-SF1', s[12], perd['S-CF1']),                         # 13 (bye) vs P(7v12)
+            ('S-SF2', perd['S-CF2'], perd['S-CF3'])]                 # P(8v11) vs P(9v10)
 
 def _sotano_final(perd):
-    return [('S-FINAL', perd['S-SF1'], perd['S-SF2'])]
-
-
-# Qué ronda se juega en cada jornada de playoff
-PLAN = {
-    7:  ('campeones_cuartos', 'sotano_repechaje'),
-    8:  ('campeones_semis',   'sotano_cuartos'),
-    9:  ('campeones_final',   'sotano_semis'),
-    10: ('sotano_final',),
-}
+    return [('S-FINAL', perd['S-SF1'], perd['S-SF2'])]               # el que pierde = el peor
 
 
 def correr_playoffs(seeds: list[str], puntos_por_jornada: dict[int, dict[str, int]]) -> dict:
@@ -127,12 +116,11 @@ def correr_playoffs(seeds: list[str], puntos_por_jornada: dict[int, dict[str, in
             cruces[cid] = (a, b, g, p)
 
     resolver(_campeones_cuartos(seeds), 7)
-    resolver(_sotano_repechaje(seeds), 7)
+    resolver(_sotano_cuartos(seeds), 7)
     resolver(_campeones_semis(seeds, gan), 8)
-    resolver(_sotano_cuartos(seeds, perd), 8)
+    resolver(_sotano_semis(seeds, perd), 8)
     resolver(_campeones_final(gan, perd), 9)
-    resolver(_sotano_semis(seeds, perd), 9)
-    resolver(_sotano_final(perd), 10)
+    resolver(_sotano_final(perd), 9)
 
     return {
         'cruces': cruces,
