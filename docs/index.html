@@ -446,21 +446,24 @@
     padding: 13px 18px; border-radius: 10px; margin-bottom: 14px;
     box-shadow: 0 4px 18px rgba(192,38,211,0.3);
   }
-  .po-sub { color: var(--txt2); font-size: 0.84rem; margin: -4px 0 12px; }
-  .po-ronda { margin-bottom: 14px; }
+  .po-sub { color: var(--txt2); font-size: 0.84rem; margin: -4px 0 12px; line-height: 1.5; }
+  /* Bracket: rondas en columnas, scroll horizontal en pantallas chicas */
+  .po-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+  .po-rounds { display: flex; gap: 16px; min-width: min-content; align-items: stretch; }
+  .po-ronda { min-width: 162px; flex-shrink: 0; display: flex; flex-direction: column; }
   .po-ronda-h {
-    font-size: 0.66rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--cyan); margin-bottom: 8px;
+    font-size: 0.64rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: 10px; text-align: center;
   }
-  .po-cruce { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
-              padding: 6px 8px; margin-bottom: 8px; }
-  .po-slot { display: flex; align-items: center; gap: 8px; padding: 5px 2px; }
-  .po-seed { font-size: 0.7rem; font-weight: 800; color: var(--gris); min-width: 26px; }
-  .po-name { font-size: 0.85rem; font-weight: 700; color: var(--txt); }
-  .po-slot.po-tbd { padding-left: 8px; }
-  .po-slot.po-tbd .po-name { color: var(--txt2); font-weight: 600; font-style: italic; font-size: 0.8rem; }
-  .po-vs { text-align: center; font-size: 0.6rem; font-weight: 800; color: var(--gris);
-           letter-spacing: 1px; padding: 1px 0; }
+  .po-ronda-body { display: flex; flex-direction: column; justify-content: space-around; flex: 1; gap: 10px; }
+  .po-cruce { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 5px 7px; }
+  .po-slot { display: flex; align-items: center; gap: 7px; padding: 5px 2px; }
+  .po-slot + .po-slot { border-top: 1px dashed var(--border); }
+  .po-seed { font-size: 0.68rem; font-weight: 800; color: var(--gris); min-width: 24px; }
+  .po-slot .avatar, .po-slot .avatar-ph { width: 26px; height: 26px; margin-right: 0; }
+  .po-name { font-size: 0.82rem; font-weight: 700; color: var(--txt); }
+  .po-slot.po-tbd { padding-left: 6px; }
+  .po-slot.po-tbd .po-name { color: var(--txt2); font-weight: 600; font-style: italic; font-size: 0.76rem; }
   .po-prize { color: var(--dorado); font-weight: 800; }
   /* Marca de "ya envió el form" */
   .part-card.entregado {

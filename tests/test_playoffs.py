@@ -24,12 +24,15 @@ def test_h2h_gana_mas_puntos_y_empate_por_seed():
 
 def test_playoff_completo():
     pts = {
-        7:  {'S3': 10, 'S6': 5, 'S4': 10, 'S5': 5, 'S12': 10, 'S13': 5},
+        # J7 — cuartos campeones (3v6, 4v5) y cuartos sótano (7v12, 8v11, 9v10)
+        7:  {'S3': 10, 'S6': 5, 'S4': 10, 'S5': 5,
+             'S7': 10, 'S12': 5, 'S8': 10, 'S11': 5, 'S9': 10, 'S10': 5},
+        # J8 — semis campeones y semis sótano (13 vs P(7v12)=S12; P(8v11)=S11 vs P(9v10)=S10)
         8:  {'S1': 10, 'S4': 5, 'S2': 10, 'S3': 5,
-             'S9': 10, 'S13': 5, 'S10': 10, 'S11': 5},
+             'S13': 5, 'S12': 10, 'S11': 10, 'S10': 5},
+        # J9 — final+3er campeones y final sótano (P(SF1)=S13 vs P(SF2)=S10)
         9:  {'S1': 10, 'S2': 5, 'S4': 10, 'S3': 5,
-             'S7': 10, 'S11': 5, 'S8': 10, 'S13': 5},
-        10: {'S11': 10, 'S13': 5},
+             'S13': 5, 'S10': 10},
     }
     r = correr_playoffs(SEEDS, pts)
 
@@ -38,9 +41,19 @@ def test_playoff_completo():
     assert r['subcampeon'] == 'S2'
     assert r['tercero'] == 'S4'
 
-    # Sótano: el peor seed S13 va perdiendo todo y cae hasta el fondo
+    # Sótano: S13 (peor seed) va perdiendo todo y cae hasta el fondo
     assert r['peor'] == 'S13'
-    assert r['salvado'] == 'S11'  # pierde la final del sótano por puntos → se salva
+    assert r['salvado'] == 'S10'  # le gana a S13 la final → se salva (12°)
+
+
+def test_sotano_bye_13_entra_en_semis():
+    # 13° no aparece en cuartos del sótano; sí en semis
+    pts = {7: {'S7': 9, 'S12': 1, 'S8': 9, 'S11': 1, 'S9': 9, 'S10': 1}}
+    r = correr_playoffs(SEEDS, pts)
+    cuartos_ids = [c for c in r['cruces'] if c.startswith('S-CF')]
+    jugadores = {p for cid in cuartos_ids for p in r['cruces'][cid][:2]}
+    assert 'S13' not in jugadores
+    assert 'S13' in r['cruces']['S-SF1'][:2]
 
 
 def test_byes_campeones_entran_en_semis():

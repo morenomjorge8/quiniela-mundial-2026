@@ -487,21 +487,24 @@ _CSS_SITIO = """
     padding: 13px 18px; border-radius: 10px; margin-bottom: 14px;
     box-shadow: 0 4px 18px rgba(192,38,211,0.3);
   }
-  .po-sub { color: var(--txt2); font-size: 0.84rem; margin: -4px 0 12px; }
-  .po-ronda { margin-bottom: 14px; }
+  .po-sub { color: var(--txt2); font-size: 0.84rem; margin: -4px 0 12px; line-height: 1.5; }
+  /* Bracket: rondas en columnas, scroll horizontal en pantallas chicas */
+  .po-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+  .po-rounds { display: flex; gap: 16px; min-width: min-content; align-items: stretch; }
+  .po-ronda { min-width: 162px; flex-shrink: 0; display: flex; flex-direction: column; }
   .po-ronda-h {
-    font-size: 0.66rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--cyan); margin-bottom: 8px;
+    font-size: 0.64rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: 10px; text-align: center;
   }
-  .po-cruce { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
-              padding: 6px 8px; margin-bottom: 8px; }
-  .po-slot { display: flex; align-items: center; gap: 8px; padding: 5px 2px; }
-  .po-seed { font-size: 0.7rem; font-weight: 800; color: var(--gris); min-width: 26px; }
-  .po-name { font-size: 0.85rem; font-weight: 700; color: var(--txt); }
-  .po-slot.po-tbd { padding-left: 8px; }
-  .po-slot.po-tbd .po-name { color: var(--txt2); font-weight: 600; font-style: italic; font-size: 0.8rem; }
-  .po-vs { text-align: center; font-size: 0.6rem; font-weight: 800; color: var(--gris);
-           letter-spacing: 1px; padding: 1px 0; }
+  .po-ronda-body { display: flex; flex-direction: column; justify-content: space-around; flex: 1; gap: 10px; }
+  .po-cruce { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 5px 7px; }
+  .po-slot { display: flex; align-items: center; gap: 7px; padding: 5px 2px; }
+  .po-slot + .po-slot { border-top: 1px dashed var(--border); }
+  .po-seed { font-size: 0.68rem; font-weight: 800; color: var(--gris); min-width: 24px; }
+  .po-slot .avatar, .po-slot .avatar-ph { width: 26px; height: 26px; margin-right: 0; }
+  .po-name { font-size: 0.82rem; font-weight: 700; color: var(--txt); }
+  .po-slot.po-tbd { padding-left: 6px; }
+  .po-slot.po-tbd .po-name { color: var(--txt2); font-weight: 600; font-style: italic; font-size: 0.76rem; }
   .po-prize { color: var(--dorado); font-weight: 800; }
   /* Marca de "ya envió el form" */
   .part-card.entregado {
@@ -1115,17 +1118,18 @@ def _po_ronda(nombre, cruces, seeds, imagenes):
     cards = ''
     for a, b in cruces:
         cards += (f'<div class="po-cruce">{_po_slot(a, seeds, imagenes)}'
-                  f'<div class="po-vs">vs</div>{_po_slot(b, seeds, imagenes)}</div>')
-    return f'<div class="po-ronda"><div class="po-ronda-h">{nombre}</div>{cards}</div>'
+                  f'{_po_slot(b, seeds, imagenes)}</div>')
+    return (f'<div class="po-ronda"><div class="po-ronda-h">{nombre}</div>'
+            f'<div class="po-ronda-body">{cards}</div></div>')
 
 
 def _po_bracket(titulo, sub, rondas, seeds, imagenes):
-    rondas_html = ''.join(_po_ronda(n, c, seeds, imagenes) for n, c in rondas)
+    cols = ''.join(_po_ronda(n, c, seeds, imagenes) for n, c in rondas)
     return f"""
 <div class="card">
   <div class="card-title">{titulo}</div>
   <p class="po-sub">{sub}</p>
-  {rondas_html}
+  <div class="po-scroll"><div class="po-rounds">{cols}</div></div>
 </div>"""
 
 
@@ -1159,8 +1163,9 @@ def _build_playoffs_html(seeds, disp, imagenes):
         disp['campeones'], seeds, imagenes,
     )
     sotano = _po_bracket(
-        '💩 Llave del Sótano (7°–13°)',
-        'Para no quedar último. Bye para 7° y 8°. El que pierde la final es <b>el peor</b> 😈',
+        '💩 Toilet Playoffs (7°–13°)',
+        '¿Quién es el peor de la quiniela? Bye para el 13°. El que pierde la '
+        '<b>Poop Final</b> es <b>el peor</b> 😈',
         disp['sotano'], seeds, imagenes,
     )
     nota = ('<div class="card"><p class="po-sub">⚠️ Es una <b>proyección con la tabla de '
