@@ -549,22 +549,27 @@ _CARICATURA_FILE = {
 
 
 def _cargar_imagenes() -> dict:
-    """Devuelve {nombre_canónico: data-url} para las caricaturas existentes."""
+    """Copia las caricaturas a docs/img/ y devuelve {nombre_canónico: ruta_relativa}.
+
+    Se referencian como <img src="img/..."> (no base64): las páginas pesan unos KB
+    en vez de ~14 MB, y el navegador cachea las imágenes entre páginas.
+    """
+    import shutil
+    import urllib.parse
+    img_dir = os.path.join(OUTPUT_DIR, 'img')
+    os.makedirs(img_dir, exist_ok=True)
     imgs = {}
     for nombre, fname in _CARICATURA_FILE.items():
         fpath = os.path.join(CARICATURAS_DIR, fname)
         if not os.path.exists(fpath):
             continue
-        with open(fpath, 'rb') as fh:
-            b64 = base64.b64encode(fh.read()).decode('ascii')
-        ext  = fname.rsplit('.', 1)[-1].lower()
-        mime = 'image/jpeg' if ext in ('jpg', 'jpeg') else f'image/{ext}'
-        imgs[nombre] = f'data:{mime};base64,{b64}'
+        shutil.copy(fpath, os.path.join(img_dir, fname))
+        imgs[nombre] = f'img/{urllib.parse.quote(fname)}'
     return imgs
 
 
 def _imagen_para(nombre: str, imagenes: dict):
-    """Devuelve la data-url de la caricatura del participante, o None."""
+    """Devuelve la ruta de la caricatura del participante, o None."""
     return imagenes.get(nombre)
 
 

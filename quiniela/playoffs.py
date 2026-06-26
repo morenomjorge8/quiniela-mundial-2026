@@ -35,6 +35,29 @@ def clasificacion(seeds: list[str]) -> dict[str, list[str]]:
     return {'campeones': seeds[:6], 'sotano': seeds[6:13]}
 
 
+def bracket_display(seeds: list[str]) -> dict:
+    """Estructura de ambas llaves para mostrar (siembra actual).
+
+    Cada ronda: (nombre, [(slot_a, slot_b), ...]) donde un slot es el nombre de
+    un participante (si está sembrado) o un texto placeholder (rondas futuras).
+    """
+    s = seeds
+    return {
+        'campeones': [
+            ('Cuartos',     [(s[2], s[5]), (s[3], s[4])]),
+            ('Semifinales', [(s[0], 'Ganador 4°v5°'), (s[1], 'Ganador 3°v6°')]),
+            ('Final',       [('Ganador Semifinal A', 'Ganador Semifinal B')]),
+            ('3er lugar',   [('Perdedor Semifinal A', 'Perdedor Semifinal B')]),
+        ],
+        'sotano': [
+            ('Repechaje',   [(s[11], s[12])]),
+            ('Cuartos',     [(s[8], 'Pierde repechaje'), (s[9], s[10])]),
+            ('Semifinales', [(s[6], 'Pierde 10°v11°'), (s[7], 'Pierde 9°vRepe')]),
+            ('Final',       [('Pierde Semifinal A', 'Pierde Semifinal B')]),
+        ],
+    }
+
+
 # ── H2H ──────────────────────────────────────────────────────────────────
 
 def _h2h(a, b, puntos: dict[str, int], seeds: list[str]):
