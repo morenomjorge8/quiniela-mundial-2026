@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-  <title>Quiniela Mundial 2026</title>
+  <title>Quiniela J6 — Mundial 2026</title>
   <style>
   :root {
     --bg:       #080b14;
@@ -375,115 +375,6 @@
     .grupos-grid { grid-template-columns: 1fr 1fr; }
     .hdr-j { font-size: 2rem; }
   }
-
-  .jor-link {
-    display: flex; align-items: center; gap: 10px;
-    padding: 11px 8px; border-bottom: 1px solid var(--border);
-  }
-  .jor-link:last-child { border-bottom: none; }
-  .jor-n      { font-weight: 800; color: var(--txt); font-size: 0.9rem; min-width: 84px; }
-  .jor-fechas { flex: 1; color: var(--txt2); font-size: 0.76rem; min-width: 0; }
-  .jor-actions{ display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
-  .jor-go     { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.4px; color: var(--cyan); text-decoration: none; }
-  .jor-go.pend{ color: var(--gris); }
-  .jor-form {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.3px;
-    color: #001018; text-decoration: none;
-    background: linear-gradient(135deg, var(--cyan2) 0%, var(--cyan) 100%);
-    padding: 6px 11px; border-radius: 18px;
-    box-shadow: 0 2px 10px rgba(0,212,255,0.25);
-  }
-  .jor-badge {
-    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
-    color: var(--verde); background: rgba(46,213,115,0.14);
-    border: 1px solid rgba(46,213,115,0.45); border-radius: 20px; padding: 2px 8px;
-  }
-  .jor-link.abierta {
-    background: rgba(0,212,255,0.06);
-    border-left: 3px solid var(--cyan); border-radius: 8px;
-  }
-
-  /* Bloques informativos (cómo funciona / reglas) */
-  .info-item {
-    display: flex; gap: 11px; align-items: flex-start;
-    padding: 10px 0; border-bottom: 1px solid var(--border);
-    font-size: 0.86rem; color: var(--txt); line-height: 1.45;
-  }
-  .info-item:last-child { border-bottom: none; }
-  .info-ic { font-size: 1.15rem; flex-shrink: 0; line-height: 1.3; }
-  .info-item b { color: var(--cyan); font-weight: 700; }
-  .intro { color: var(--txt2); font-size: 0.88rem; line-height: 1.55; margin: -4px 0 4px; }
-
-  /* Grid de participantes */
-  .part-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-  }
-  .part-card {
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-    padding: 14px 6px; background: var(--bg2);
-    border: 1px solid var(--border); border-radius: 10px;
-  }
-  .part-av {
-    width: 62px; height: 62px; border-radius: 50%;
-    object-fit: cover; border: 2px solid rgba(0,212,255,0.5);
-  }
-  .part-ph {
-    display: flex; align-items: center; justify-content: center;
-    background: var(--card2); color: var(--cyan); font-weight: 800; font-size: 1rem;
-  }
-  .part-name { font-size: 0.8rem; font-weight: 700; color: var(--txt); text-align: center; }
-  .part-sub {
-    font-size: 0.74rem; color: var(--verde); font-weight: 700;
-    margin: -4px 0 12px;
-  }
-
-  /* ── Playoffs (bracket) ── */
-  .po-btn {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    background: linear-gradient(135deg, #7218a8 0%, #c026d3 100%);
-    color: #fff; text-decoration: none; font-weight: 800; letter-spacing: 0.5px;
-    padding: 13px 18px; border-radius: 10px; margin-bottom: 14px;
-    box-shadow: 0 4px 18px rgba(192,38,211,0.3);
-  }
-  .po-sub { color: var(--txt2); font-size: 0.84rem; margin: -4px 0 12px; line-height: 1.5; }
-  /* Bracket: rondas en columnas, scroll horizontal en pantallas chicas */
-  .po-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
-  .po-rounds { display: flex; gap: 12px; align-items: stretch; }
-  .po-ronda { flex: 1 1 0; min-width: 150px; display: flex; flex-direction: column; }
-  .po-ronda-h {
-    font-size: 0.64rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
-    color: var(--cyan); margin-bottom: 10px; text-align: center;
-  }
-  .po-ronda-body { display: flex; flex-direction: column; justify-content: space-around; flex: 1; gap: 10px; }
-  .po-cruce { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; }
-  .po-3er { margin-top: 12px; }
-  .po-slot { display: flex; align-items: center; gap: 8px; padding: 6px 2px; }
-  .po-slot + .po-slot { border-top: 1px dashed var(--border); }
-  .po-seed { font-size: 0.68rem; font-weight: 800; color: var(--gris); min-width: 24px; }
-  .po-slot .avatar, .po-slot .avatar-ph { width: 26px; height: 26px; margin-right: 0; }
-  .po-name { font-size: 0.82rem; font-weight: 700; color: var(--txt); }
-  .po-slot.po-tbd { padding-left: 6px; }
-  .po-slot.po-tbd .po-name { color: var(--txt2); font-weight: 600; font-style: italic; font-size: 0.76rem; }
-  .po-prize { color: var(--dorado); font-weight: 800; }
-  /* Marca de "ya envió el form" */
-  .part-card.entregado {
-    border-color: rgba(46,213,115,0.55);
-    background: linear-gradient(180deg, rgba(46,213,115,0.12), rgba(46,213,115,0.04));
-    box-shadow: 0 0 0 1px rgba(46,213,115,0.25) inset;
-  }
-  .part-card.entregado .part-av { border-color: var(--verde); }
-  .part-badge {
-    font-size: 0.58rem; font-weight: 800; letter-spacing: 0.3px;
-    color: var(--verde); background: rgba(46,213,115,0.14);
-    border: 1px solid rgba(46,213,115,0.4);
-    border-radius: 20px; padding: 2px 8px; white-space: nowrap;
-  }
-  .part-badge.pend {
-    color: var(--gris); background: var(--bg2);
-    border-color: var(--border);
-  }
-  @media (max-width: 420px) { .part-grid { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
 <body>
@@ -492,257 +383,309 @@
   <div class="hdr-content">
     <div class="hdr-eyebrow">⚽ Mundial 2026</div>
     <div class="hdr-title">QUINIELA OFICIAL</div>
-    <div class="hdr-j">TABLA GENERAL</div>
-    <div class="hdr-dates">Temporada regular · 6/6 jornadas jugadas</div>
+    <div class="hdr-j">JORNADA 6</div>
+    <div class="hdr-dates">26–27 junio 2026</div>
+    <span class="badge-open"><span class="badge-dot"></span>PREDICCIONES ABIERTAS</span>
   </div>
   <div class="hdr-players"><img class="hdr-pl" style="height:130px;opacity:0.48;z-index:1;margin-left:0;" src="img/01_paula_Ar.png" alt=""><img class="hdr-pl" style="height:135px;opacity:0.52;z-index:2;margin-left:-58px;" src="img/02_CR_ROWLAND_VS.png" alt=""><img class="hdr-pl" style="height:141px;opacity:0.57;z-index:3;margin-left:-58px;" src="img/13_vicente_-removebg-preview.png" alt=""><img class="hdr-pl" style="height:147px;opacity:0.61;z-index:4;margin-left:-58px;" src="img/07_DANI_MX.png" alt=""><img class="hdr-pl" style="height:153px;opacity:0.65;z-index:5;margin-left:-58px;" src="img/05_CL_TO%C3%91O_VF_B.png" alt=""><img class="hdr-pl" style="height:159px;opacity:0.7;z-index:6;margin-left:-58px;" src="img/06_MX_SOF_OROZCO_VF.png" alt=""><img class="hdr-pl" style="height:165px;opacity:0.74;z-index:7;margin-left:-58px;" src="img/08_pablo_co.png" alt=""><img class="hdr-pl" style="height:170px;opacity:0.78;z-index:8;margin-left:-58px;" src="img/09_sof_mx2.png" alt=""><img class="hdr-pl" style="height:176px;opacity:0.83;z-index:9;margin-left:-58px;" src="img/04_LU_MX.png" alt=""><img class="hdr-pl" style="height:182px;opacity:0.87;z-index:10;margin-left:-58px;" src="img/11_MX_GEORGE_VF_B.png" alt=""><img class="hdr-pl" style="height:188px;opacity:0.91;z-index:11;margin-left:-58px;" src="img/12_mx_llanos_vf.png" alt=""><img class="hdr-pl" style="height:194px;opacity:0.96;z-index:12;margin-left:-58px;" src="img/10_PEDRO_MX.png" alt=""><img class="hdr-pl" style="height:200px;opacity:1.0;z-index:13;margin-left:-58px;" src="img/03_MX_JIMENA_VF.png" alt=""></div>
 </header>
 <div class="wrap">
   
-  <a class="po-btn" href="playoffs.html">🏆 Ver Playoffs (proyección) 💩</a>
-  
-<div class="card">
-  <div class="card-title">La Quiniela</div>
-  <p class="intro">
-    Compite con tus pronósticos del Mundial 2026. Cada jornada predices los
-    resultados de los partidos y sumas puntos. Las primeras 6 jornadas son la
-    temporada regular: arman una tabla general y los mejores pelean el título
-    en los playoffs. ⚽🏆
-  </p>
-</div>
-  
-<div class="card">
-  <div class="card-title">Cómo funciona</div>
-  <div class="info-ico-list">
-    <div class="info-item"><span class="info-ic">📅</span><div><b>Temporada regular (Jornadas 1–6):</b> cada jornada pronosticas los 12 partidos del Mundial. Tus aciertos se acumulan en la <b>tabla general</b>.</div></div>
-    <div class="info-item"><span class="info-ic">🎟️</span><div><b>Clasificación:</b> al terminar la Jornada 6, los <b>6 primeros</b> de la tabla general avanzan a los Playoffs.</div></div>
-    <div class="info-item"><span class="info-ic">🏆</span><div><b>Playoffs:</b> los lugares <b>1 y 2</b> descansan (bye) y esperan en semifinales. En cuartos juegan <b>3 vs 6</b> y <b>4 vs 5</b>. Luego semifinales y la gran final.</div></div>
-    <div class="info-item"><span class="info-ic">⚖️</span><div>En los playoffs avanza quien tenga <b>más puntos acumulados</b> de toda la quiniela.</div></div>
+<a class="btn-form" href="https://forms.gle/dETboF8q9oymCJiq9" target="_blank">
+  <span>📝</span> LLENAR MIS PREDICCIONES
+</a>
+<div class="btn-deadline">
+  Llenar predicciones antes del <strong>martes 9 de junio a las 16:00 hrs</strong>
+  <div class="tz-list">
+    <span class="tz-item">CDMX &#127474;&#127485; 16:00 hrs</span>
+    <span class="tz-item">San Jos&#233; &#127464;&#127479; 16:00 hrs</span>
+    <span class="tz-item">Bogot&#225; &#127464;&#127476; 17:00 hrs</span>
+    <span class="tz-item">Santiago &#127464;&#127473; 19:00 hrs</span>
+    <span class="tz-item">Buenos Aires &#127462;&#127479; 20:00 hrs</span>
   </div>
 </div>
   
 <div class="card">
-  <div class="card-title">Reglas y puntuación</div>
-  <div class="info-ico-list">
-    <div class="info-item"><span class="info-ic">✅</span><div><b>+1 punto</b> por cada resultado correcto: gana local <b>(1)</b> · empate <b>(X)</b> · gana visitante <b>(2)</b>.</div></div>
-    <div class="info-item"><span class="info-ic">🟥</span><div><b>+2 puntos</b> si aciertas el <b>total de tarjetas rojas</b> de la jornada.</div></div>
-    <div class="info-item"><span class="info-ic">🎯</span><div><b>+2 puntos</b> si aciertas el <b>total de penales de falta</b> (las tandas no cuentan).</div></div>
-    <div class="info-item"><span class="info-ic">🔢</span><div><b>Desempate en la tabla:</b> puntos totales → bonus acertados → tu mejor jornada.</div></div>
-    <div class="info-item"><span class="info-ic">💰</span><div><b>Apuesta:</b> 15 USD por persona.</div></div>
+  <div class="card-title">Partidos del Mundial</div>
+  <div class="match-grid">
+        <div class="match-item">
+          <div class="match-num">Partido #61</div>
+          <div class="match-teams">NORUEGA <span class="match-sep">vs</span> FRANCIA</div>
+          <div class="match-fecha">📅 Viernes 26 de junio</div>
+          <div class="match-num" style="color:#2a9d5c">✓ FRANCIA</div>
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #62</div>
+          <div class="match-teams">SENEGAL <span class="match-sep">vs</span> IRAK</div>
+          <div class="match-fecha">📅 Viernes 26 de junio</div>
+          <div class="match-num" style="color:#2a9d5c">✓ SENEGAL</div>
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #63</div>
+          <div class="match-teams">CABO VERDE <span class="match-sep">vs</span> ARABIA SAUDÍ</div>
+          <div class="match-fecha">📅 Viernes 26 de junio</div>
+          
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #64</div>
+          <div class="match-teams">URUGUAY <span class="match-sep">vs</span> ESPAÑA</div>
+          <div class="match-fecha">📅 Viernes 26 de junio</div>
+          
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #65</div>
+          <div class="match-teams">EGIPTO <span class="match-sep">vs</span> IRÁN</div>
+          <div class="match-fecha">📅 Viernes 26 de junio</div>
+          
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #66</div>
+          <div class="match-teams">NUEVA ZELANDA <span class="match-sep">vs</span> BÉLGICA</div>
+          <div class="match-fecha">📅 Viernes 26 de junio</div>
+          
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #67</div>
+          <div class="match-teams">PANAMÁ <span class="match-sep">vs</span> INGLATERRA</div>
+          <div class="match-fecha">📅 Sábado 27 de junio</div>
+          
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #68</div>
+          <div class="match-teams">CROACIA <span class="match-sep">vs</span> GHANA</div>
+          <div class="match-fecha">📅 Sábado 27 de junio</div>
+          
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #69</div>
+          <div class="match-teams">COLOMBIA <span class="match-sep">vs</span> PORTUGAL</div>
+          <div class="match-fecha">📅 Sábado 27 de junio</div>
+          
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #70</div>
+          <div class="match-teams">R. CONGO <span class="match-sep">vs</span> USBEKISTÁN</div>
+          <div class="match-fecha">📅 Sábado 27 de junio</div>
+          
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #71</div>
+          <div class="match-teams">ARGELIA <span class="match-sep">vs</span> AUSTRIA</div>
+          <div class="match-fecha">📅 Sábado 27 de junio</div>
+          
+        </div>
+        <div class="match-item">
+          <div class="match-num">Partido #72</div>
+          <div class="match-teams">JORDANIA <span class="match-sep">vs</span> ARGENTINA</div>
+          <div class="match-fecha">📅 Sábado 27 de junio</div>
+          
+        </div>
   </div>
 </div>
   
 <div class="card">
-  <div class="card-title">Participantes (13)</div>
-  <div class="part-sub">13/13 ya enviaron la Jornada 6</div>
-  <div class="part-grid">
-      <div class="part-card entregado">
-        <img class="part-av" src="img/07_DANI_MX.png" alt="Dani">
-        <span class="part-name">Dani</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/11_MX_GEORGE_VF_B.png" alt="George">
-        <span class="part-name">George</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/03_MX_JIMENA_VF.png" alt="Jime">
-        <span class="part-name">Jime</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/12_mx_llanos_vf.png" alt="Llanos">
-        <span class="part-name">Llanos</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/04_LU_MX.png" alt="Lucía">
-        <span class="part-name">Lucía</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/08_pablo_co.png" alt="Pablo">
-        <span class="part-name">Pablo</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/01_paula_Ar.png" alt="Pau">
-        <span class="part-name">Pau</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/10_PEDRO_MX.png" alt="Pedro">
-        <span class="part-name">Pedro</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/02_CR_ROWLAND_VS.png" alt="Row">
-        <span class="part-name">Row</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/09_sof_mx2.png" alt="Sof">
-        <span class="part-name">Sof</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/06_MX_SOF_OROZCO_VF.png" alt="Sof Orozco">
-        <span class="part-name">Sof Orozco</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/05_CL_TO%C3%91O_VF_B.png" alt="Toninho">
-        <span class="part-name">Toninho</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
-      <div class="part-card entregado">
-        <img class="part-av" src="img/13_vicente_-removebg-preview.png" alt="Vicente">
-        <span class="part-name">Vicente</span>
-        <span class="part-badge">✓ Jornada 6</span>
-      </div>
+  <div class="card-title">Rojas y penales de la jornada</div>
+  <div class="bonosj-grid">
+    
+    <div class="bonosj">
+      <div class="bonosj-h">🟥 Tarjetas rojas · Real: <b>0</b></div>
+      <div class="bonosj-row"><span class="bv">5</span><span class="bn">Pau</span></div><div class="bonosj-row"><span class="bv">4</span><span class="bn">Llanos, Pedro</span></div><div class="bonosj-row"><span class="bv">3</span><span class="bn">Jime, Pablo, Toninho</span></div><div class="bonosj-row"><span class="bv">1</span><span class="bn">George, Lucía, Row, Sof, Sof Orozco, Vicente</span></div><div class="bonosj-row acerto"><span class="bv">0</span><span class="bn">Dani</span><span class="bonosj-ok">✓ +2</span></div>
+    </div>
+    
+    <div class="bonosj">
+      <div class="bonosj-h">🎯 Penales de falta · Real: <b>0</b></div>
+      <div class="bonosj-row"><span class="bv">4</span><span class="bn">Dani, Pedro</span></div><div class="bonosj-row"><span class="bv">3</span><span class="bn">Pablo, Pau</span></div><div class="bonosj-row"><span class="bv">2</span><span class="bn">Jime, Llanos, Row, Sof Orozco, Toninho, Vicente</span></div><div class="bonosj-row"><span class="bv">1</span><span class="bn">George, Lucía, Sof</span></div>
+    </div>
   </div>
 </div>
   
 <div class="card">
-  <div class="card-title">Tabla General — Temporada Regular</div>
+  <div class="card-title">Puntos de la jornada</div>
+  
+      <div class="j-row">
+        <img class="avatar" src="img/07_DANI_MX.png" alt="Dani">
+        <span class="j-name">Dani</span>
+        <span class="j-bonus">+2 bonus</span>
+        <span class="j-pts">3</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/11_MX_GEORGE_VF_B.png" alt="George">
+        <span class="j-name">George</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/10_PEDRO_MX.png" alt="Pedro">
+        <span class="j-name">Pedro</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/03_MX_JIMENA_VF.png" alt="Jime">
+        <span class="j-name">Jime</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/06_MX_SOF_OROZCO_VF.png" alt="Sof Orozco">
+        <span class="j-name">Sof Orozco</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/04_LU_MX.png" alt="Lucía">
+        <span class="j-name">Lucía</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/09_sof_mx2.png" alt="Sof">
+        <span class="j-name">Sof</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/02_CR_ROWLAND_VS.png" alt="Row">
+        <span class="j-name">Row</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/08_pablo_co.png" alt="Pablo">
+        <span class="j-name">Pablo</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/01_paula_Ar.png" alt="Pau">
+        <span class="j-name">Pau</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/05_CL_TO%C3%91O_VF_B.png" alt="Toninho">
+        <span class="j-name">Toninho</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/12_mx_llanos_vf.png" alt="Llanos">
+        <span class="j-name">Llanos</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+      <div class="j-row">
+        <img class="avatar" src="img/13_vicente_-removebg-preview.png" alt="Vicente">
+        <span class="j-name">Vicente</span>
+        
+        <span class="j-pts">2</span>
+      </div>
+</div>
+  
+<div class="card">
+  <div class="card-title">Tabla General</div>
   <table class="tbl">
     <thead>
       <tr>
         <th>#</th><th class="left">Participante</th>
-        <th>J</th><th>Bon</th><th>Pts</th>
+        <th>Jor</th><th>Bon</th><th>Pts</th>
       </tr>
     </thead>
     <tbody>
         <tr class="top3-1 qual">
           <td class="rank">1</td>
           <td class="left">Jime</td>
-          <td>6</td>
+          <td>2</td>
           <td>4</td>
           <td class="pts">43</td>
         </tr>
         <tr class="top3-2 qual">
           <td class="rank">2</td>
           <td class="left">Pedro</td>
-          <td>6</td>
+          <td>2</td>
           <td>4</td>
           <td class="pts">42</td>
         </tr>
         <tr class="top3-3 qual">
           <td class="rank">3</td>
           <td class="left">Llanos</td>
-          <td>6</td>
+          <td>2</td>
           <td>2</td>
           <td class="pts">41</td>
         </tr>
         <tr class="qual">
           <td class="rank">4</td>
           <td class="left">George</td>
-          <td>6</td>
+          <td>2</td>
           <td>2</td>
           <td class="pts">40</td>
         </tr>
         <tr class="qual">
           <td class="rank">5</td>
           <td class="left">Lucía</td>
-          <td>6</td>
+          <td>2</td>
           <td>4</td>
           <td class="pts">39</td>
         </tr>
         <tr class="qual cut">
           <td class="rank">5</td>
           <td class="left">Sof</td>
-          <td>6</td>
+          <td>2</td>
           <td>2</td>
           <td class="pts">39</td>
         </tr>
         <tr class="">
           <td class="rank">7</td>
           <td class="left">Pablo</td>
-          <td>6</td>
+          <td>2</td>
           <td>2</td>
           <td class="pts">38</td>
         </tr>
         <tr class="">
           <td class="rank">8</td>
           <td class="left">Sof Orozco</td>
-          <td>6</td>
+          <td>2</td>
           <td>2</td>
           <td class="pts">37</td>
         </tr>
         <tr class="">
           <td class="rank">9</td>
           <td class="left">Toninho</td>
-          <td>6</td>
+          <td>2</td>
           <td>6</td>
           <td class="pts">36</td>
         </tr>
         <tr class="">
           <td class="rank">9</td>
           <td class="left">Dani</td>
-          <td>6</td>
+          <td>3</td>
           <td>4</td>
           <td class="pts">36</td>
         </tr>
         <tr class="">
           <td class="rank">11</td>
           <td class="left">Vicente</td>
-          <td>6</td>
+          <td>2</td>
           <td>0</td>
           <td class="pts">34</td>
         </tr>
         <tr class="">
           <td class="rank">12</td>
           <td class="left">Row</td>
-          <td>6</td>
+          <td>2</td>
           <td>2</td>
           <td class="pts">32</td>
         </tr>
         <tr class="">
           <td class="rank">12</td>
           <td class="left">Pau</td>
-          <td>6</td>
+          <td>2</td>
           <td>0</td>
           <td class="pts">32</td>
         </tr>
     </tbody>
   </table>
   <div class="cut-legend">Top 6 clasifican a playoffs</div>
-</div>
-  
-<div class="card">
-  <div class="card-title">Jornadas</div>
-  
-      <div class="jor-link">
-        <span class="jor-n">Jornada 1</span>
-        <span class="jor-fechas">11–14 junio 2026</span>
-        <span class="jor-actions"><a class="jor-go" href="jornada_1.html">Ver resultados →</a></span>
-      </div>
-      <div class="jor-link">
-        <span class="jor-n">Jornada 2</span>
-        <span class="jor-fechas">15–17 junio 2026</span>
-        <span class="jor-actions"><a class="jor-go" href="jornada_2.html">Ver resultados →</a></span>
-      </div>
-      <div class="jor-link">
-        <span class="jor-n">Jornada 3</span>
-        <span class="jor-fechas">18–20 junio 2026</span>
-        <span class="jor-actions"><a class="jor-go" href="jornada_3.html">Ver resultados →</a></span>
-      </div>
-      <div class="jor-link">
-        <span class="jor-n">Jornada 4</span>
-        <span class="jor-fechas">21–23 junio 2026</span>
-        <span class="jor-actions"><a class="jor-go" href="jornada_4.html">Ver resultados →</a></span>
-      </div>
-      <div class="jor-link">
-        <span class="jor-n">Jornada 5</span>
-        <span class="jor-fechas">24–25 junio 2026</span>
-        <span class="jor-actions"><a class="jor-go" href="jornada_5.html">Ver resultados →</a></span>
-      </div>
-      <div class="jor-link abierta">
-        <span class="jor-n">Jornada 6</span>
-        <span class="jor-fechas">26–27 junio 2026</span>
-        <span class="jor-actions"><span class="jor-badge">● Abierta</span><a class="jor-go" href="jornada_6.html">Ver resultados →</a></span>
-      </div>
 </div>
 </div>
 <div class="footer">QUINIELA MUNDIAL 2026 &nbsp;&nbsp;|&nbsp;&nbsp; Hecho con amor ⚽</div>
