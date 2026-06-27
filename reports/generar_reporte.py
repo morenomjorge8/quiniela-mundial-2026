@@ -932,7 +932,7 @@ def _section_reglas():
     <div class="info-item"><span class="info-ic">✅</span><div><b>+1 punto</b> por cada resultado correcto: gana local <b>(1)</b> · empate <b>(X)</b> · gana visitante <b>(2)</b>.</div></div>
     <div class="info-item"><span class="info-ic">🟥</span><div><b>+2 puntos</b> si aciertas el <b>total de tarjetas rojas</b> de la jornada.</div></div>
     <div class="info-item"><span class="info-ic">🎯</span><div><b>+2 puntos</b> si aciertas el <b>total de penales de falta</b> (las tandas no cuentan).</div></div>
-    <div class="info-item"><span class="info-ic">🔢</span><div><b>Desempate en la tabla:</b> puntos totales → bonus acertados → tu mejor jornada.</div></div>
+    <div class="info-item"><span class="info-ic">🔢</span><div><b>Desempate en la tabla:</b> puntos totales → bonus acertados → tu mejor jornada → 2ª mejor → 3ª mejor → nombre.</div></div>
     <div class="info-item"><span class="info-ic">💰</span><div><b>Apuesta:</b> 15 USD por persona.</div></div>
   </div>
 </div>"""
