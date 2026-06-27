@@ -289,6 +289,8 @@ _CSS = """
   .tbl tbody tr:hover td { background: var(--card2); }
   .tbl .rank { color: var(--gris); font-weight: 700; font-size: 0.8rem; }
   .tbl .pts  { font-weight: 900; color: var(--dorado); font-size: 0.95rem; }
+  .tbl .des  { color: var(--gris); font-size: 0.72rem; }
+  .tbl th.des { color: var(--gris); }
   .tbl .dif.pos { color: var(--verde); font-weight: 700; }
   .tbl .dif.neg { color: var(--rojo);  font-weight: 700; }
   .gbadge {
@@ -769,6 +771,9 @@ def _section_tabla(tabla, resultados_j, clasifican=CLASIFICAN):
           <td class="left">{s['nombre']}</td>
           <td>{pj}</td>
           <td>{s['bonus']}</td>
+          <td class="des">{s['mejor_jornada']}</td>
+          <td class="des">{s.get('segunda_mejor_jornada', 0)}</td>
+          <td class="des">{s.get('tercera_mejor_jornada', 0)}</td>
           <td class="pts">{s['puntos_total']}</td>
         </tr>"""
 
@@ -779,13 +784,15 @@ def _section_tabla(tabla, resultados_j, clasifican=CLASIFICAN):
     <thead>
       <tr>
         <th>#</th><th class="left">Participante</th>
-        <th>Jor</th><th>Bon</th><th>Pts</th>
+        <th>Jor</th><th>Bon</th>
+        <th class="des">Mej</th><th class="des">2ª</th><th class="des">3ª</th>
+        <th>Pts</th>
       </tr>
     </thead>
     <tbody>{filas}
     </tbody>
   </table>
-  <div class="cut-legend">Top {clasifican} clasifican a playoffs</div>
+  <div class="cut-legend">Top {clasifican} clasifican a playoffs &nbsp;·&nbsp; Bon = bonos totales · Mej/2ª/3ª = mejores jornadas (desempate)</div>
 </div>"""
 
 
@@ -847,6 +854,9 @@ def _section_tabla_general(tabla, clasifican=CLASIFICAN):
           <td class="left">{s['nombre']}</td>
           <td>{s['jornadas']}</td>
           <td>{s['bonus']}</td>
+          <td class="des">{s['mejor_jornada']}</td>
+          <td class="des">{s.get('segunda_mejor_jornada', 0)}</td>
+          <td class="des">{s.get('tercera_mejor_jornada', 0)}</td>
           <td class="pts">{s['puntos_total']}</td>
         </tr>"""
     return f"""
@@ -856,13 +866,15 @@ def _section_tabla_general(tabla, clasifican=CLASIFICAN):
     <thead>
       <tr>
         <th>#</th><th class="left">Participante</th>
-        <th>J</th><th>Bon</th><th>Pts</th>
+        <th>J</th><th>Bon</th>
+        <th class="des">Mej</th><th class="des">2ª</th><th class="des">3ª</th>
+        <th>Pts</th>
       </tr>
     </thead>
     <tbody>{filas}
     </tbody>
   </table>
-  <div class="cut-legend">Top {clasifican} clasifican a playoffs</div>
+  <div class="cut-legend">Top {clasifican} clasifican a playoffs &nbsp;·&nbsp; Bon = bonos totales · Mej/2ª/3ª = mejores jornadas (desempate)</div>
 </div>"""
 
 

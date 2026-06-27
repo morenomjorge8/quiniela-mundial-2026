@@ -251,6 +251,8 @@
   .tbl tbody tr:hover td { background: var(--card2); }
   .tbl .rank { color: var(--gris); font-weight: 700; font-size: 0.8rem; }
   .tbl .pts  { font-weight: 900; color: var(--dorado); font-size: 0.95rem; }
+  .tbl .des  { color: var(--gris); font-size: 0.72rem; }
+  .tbl th.des { color: var(--gris); }
   .tbl .dif.pos { color: var(--verde); font-weight: 700; }
   .tbl .dif.neg { color: var(--rojo);  font-weight: 700; }
   .gbadge {
@@ -610,7 +612,9 @@
     <thead>
       <tr>
         <th>#</th><th class="left">Participante</th>
-        <th>J</th><th>Bon</th><th>Pts</th>
+        <th>J</th><th>Bon</th>
+        <th class="des">Mej</th><th class="des">2ª</th><th class="des">3ª</th>
+        <th>Pts</th>
       </tr>
     </thead>
     <tbody>
@@ -619,6 +623,9 @@
           <td class="left">Pedro</td>
           <td>6</td>
           <td>4</td>
+          <td class="des">12</td>
+          <td class="des">10</td>
+          <td class="des">7</td>
           <td class="pts">45</td>
         </tr>
         <tr class="top3-2 qual">
@@ -626,6 +633,9 @@
           <td class="left">Lucía</td>
           <td>6</td>
           <td>6</td>
+          <td class="des">9</td>
+          <td class="des">9</td>
+          <td class="des">7</td>
           <td class="pts">44</td>
         </tr>
         <tr class="top3-2 qual">
@@ -633,6 +643,9 @@
           <td class="left">George</td>
           <td>6</td>
           <td>4</td>
+          <td class="des">10</td>
+          <td class="des">8</td>
+          <td class="des">8</td>
           <td class="pts">44</td>
         </tr>
         <tr class="top3-2 qual">
@@ -640,6 +653,9 @@
           <td class="left">Jime</td>
           <td>6</td>
           <td>4</td>
+          <td class="des">9</td>
+          <td class="des">9</td>
+          <td class="des">8</td>
           <td class="pts">44</td>
         </tr>
         <tr class="top3-2 qual">
@@ -647,6 +663,9 @@
           <td class="left">Sof</td>
           <td>6</td>
           <td>4</td>
+          <td class="des">9</td>
+          <td class="des">8</td>
+          <td class="des">7</td>
           <td class="pts">44</td>
         </tr>
         <tr class="qual cut">
@@ -654,6 +673,9 @@
           <td class="left">Pablo</td>
           <td>6</td>
           <td>2</td>
+          <td class="des">10</td>
+          <td class="des">10</td>
+          <td class="des">7</td>
           <td class="pts">43</td>
         </tr>
         <tr class="">
@@ -661,6 +683,9 @@
           <td class="left">Llanos</td>
           <td>6</td>
           <td>2</td>
+          <td class="des">10</td>
+          <td class="des">8</td>
+          <td class="des">7</td>
           <td class="pts">43</td>
         </tr>
         <tr class="">
@@ -668,6 +693,9 @@
           <td class="left">Sof Orozco</td>
           <td>6</td>
           <td>2</td>
+          <td class="des">10</td>
+          <td class="des">9</td>
+          <td class="des">6</td>
           <td class="pts">42</td>
         </tr>
         <tr class="">
@@ -675,6 +703,9 @@
           <td class="left">Toninho</td>
           <td>6</td>
           <td>6</td>
+          <td class="des">10</td>
+          <td class="des">7</td>
+          <td class="des">7</td>
           <td class="pts">37</td>
         </tr>
         <tr class="">
@@ -682,6 +713,9 @@
           <td class="left">Dani</td>
           <td>6</td>
           <td>2</td>
+          <td class="des">9</td>
+          <td class="des">7</td>
+          <td class="des">7</td>
           <td class="pts">37</td>
         </tr>
         <tr class="">
@@ -689,6 +723,9 @@
           <td class="left">Vicente</td>
           <td>6</td>
           <td>0</td>
+          <td class="des">8</td>
+          <td class="des">7</td>
+          <td class="des">6</td>
           <td class="pts">37</td>
         </tr>
         <tr class="">
@@ -696,6 +733,9 @@
           <td class="left">Row</td>
           <td>6</td>
           <td>2</td>
+          <td class="des">9</td>
+          <td class="des">7</td>
+          <td class="des">7</td>
           <td class="pts">36</td>
         </tr>
         <tr class="">
@@ -703,11 +743,14 @@
           <td class="left">Pau</td>
           <td>6</td>
           <td>0</td>
+          <td class="des">10</td>
+          <td class="des">7</td>
+          <td class="des">5</td>
           <td class="pts">34</td>
         </tr>
     </tbody>
   </table>
-  <div class="cut-legend">Top 6 clasifican a playoffs</div>
+  <div class="cut-legend">Top 6 clasifican a playoffs &nbsp;·&nbsp; Bon = bonos totales · Mej/2ª/3ª = mejores jornadas (desempate)</div>
 </div>
   
 <div class="card">
