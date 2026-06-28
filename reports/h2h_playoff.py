@@ -292,7 +292,7 @@ def _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real):
                  f'background:rgba(255,71,87,.07)">⏳ Falta(n) por enviar sus predicciones: '
                  f'<b>{", ".join(faltan)}</b>.</div>')
 
-    return f"""<!DOCTYPE html>
+    html_doc = f"""<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{a} vs {b} — Playoffs J7</title><style>{_CSS}</style></head>
@@ -320,6 +320,7 @@ def _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real):
 </div>
 <div class="foot">Quiniela Mundial 2026 — Playoffs · cruce {a} vs {b}</div>
 </body></html>"""
+    return html_doc, tot_a, tot_b
 
 
 def _slug(nombre):
@@ -353,7 +354,11 @@ _LANDING_CSS = """
   .lc-side.b .av-ph{border-color:var(--dorado);}
   .lc-nm{font-size:.95rem;font-weight:900;color:var(--cyan);text-align:center;}
   .lc-nm.b{color:var(--dorado);}
-  .lc-x{font-size:.72rem;font-weight:900;color:var(--gris);}
+  .lc-mid{display:flex;flex-direction:column;align-items:center;gap:1px;}
+  .lc-x{font-size:.66rem;font-weight:900;color:var(--gris);letter-spacing:.5px;}
+  .lc-score{font-size:1.5rem;font-weight:900;color:var(--txt);white-space:nowrap;line-height:1;}
+  .lc-score .a{color:var(--cyan);} .lc-score .b{color:var(--dorado);}
+  .lc-sclbl{font-size:.56rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gris);}
   .lc-pend{margin-top:10px;text-align:center;font-size:.72rem;font-weight:800;color:#ff6b81;
            background:rgba(255,71,87,.1);border-radius:999px;padding:3px 8px;}
   .lc-cta{margin-top:10px;text-align:center;font-size:.75rem;font-weight:800;color:var(--cyan);}
@@ -365,17 +370,19 @@ _LANDING_CSS = """
 def _landing_html(info):
     """Página de acceso a los cruces (info = [(ruta, a, b, llave, faltan)])."""
     grupos = {}
-    for ruta, a, b, llave, faltan in info:
-        grupos.setdefault(llave, []).append((os.path.basename(ruta), a, b, faltan))
+    for ruta, a, b, llave, faltan, ta, tb in info:
+        grupos.setdefault(llave, []).append((os.path.basename(ruta), a, b, faltan, ta, tb))
 
-    def _card(fname, a, b, faltan):
+    def _card(fname, a, b, faltan, ta, tb):
         pend = f'<div class="lc-pend">⏳ Falta: {", ".join(faltan)}</div>' if faltan else ''
         cta = 'Ver (incompleto) →' if faltan else 'Ver predicciones →'
         return f"""
         <a class="lc{' pend' if faltan else ''}" href="{fname}">
           <div class="lc-vs">
             <div class="lc-side">{_avatar_html(a, 'a')}<span class="lc-nm">{a}</span></div>
-            <span class="lc-x">VS</span>
+            <div class="lc-mid"><span class="lc-x">VS</span>
+              <span class="lc-score"><b class="a">{ta}</b> – <b class="b">{tb}</b></span>
+              <span class="lc-sclbl">puntos</span></div>
             <div class="lc-side b">{_avatar_html(b, 'b')}<span class="lc-nm b">{b}</span></div>
           </div>
           {pend}
@@ -416,18 +423,19 @@ def _escribir_cruces(output_dir):
     os.makedirs(output_dir, exist_ok=True)
     info = []
     for a, b, llave in cruces:
-        html = _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real)
+        html, ta, tb = _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real)
         fname = f'h2h_j7_{_slug(a)}_vs_{_slug(b)}.html'
         with open(os.path.join(output_dir, fname), 'w', encoding='utf-8') as f:
             f.write(html)
         faltan = [x for x in (a, b) if preds.get(x) is None]
-        info.append((os.path.join(output_dir, fname), a, b, llave, faltan))
+        info.append((os.path.join(output_dir, fname), a, b, llave, faltan, ta, tb))
     return info
 
 
 def generar(output_dir=OUTPUT_DIR):
     """Genera los cruces (por defecto en reports/output). [(ruta,a,b,llave,completos)]."""
-    return [(r, a, b, llave, not faltan) for r, a, b, llave, faltan in _escribir_cruces(output_dir)]
+    return [(r, a, b, llave, not faltan)
+            for r, a, b, llave, faltan, ta, tb in _escribir_cruces(output_dir)]
 
 
 def generar_web():
