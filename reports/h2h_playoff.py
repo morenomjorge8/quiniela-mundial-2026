@@ -132,6 +132,13 @@ def _primer_gol_lv(equipo, local, visit):
     return None
 
 
+def _es_fila_resultado(nombre):
+    """True si la fila es la de RESULTADOS reales (no un participante).
+    Se captura escribiendo 'Respuesta'/'Resultado'/'Real' en la columna 'Tu nombre'."""
+    return nombre is not None and str(nombre).strip().lower().startswith(
+        ('respuesta', 'resultado', 'real'))
+
+
 def cargar_predicciones_playoff(sheet='Form Responses 1'):
     """{nombre: {'marcadores': {num:(gl,gv,equipo_primer)}, 'rojas': int, 'penales': int}}."""
     wb = openpyxl.load_workbook(PLAYOFF_XLSX, read_only=True, data_only=True)
@@ -140,8 +147,8 @@ def cargar_predicciones_playoff(sheet='Form Responses 1'):
     preds = {}
     for r in rows[1:]:
         nombre = r[1]
-        if not nombre:
-            continue
+        if not nombre or _es_fila_resultado(nombre):
+            continue  # fila vacía o la de resultados reales
         marc = {}
         for k, (num, _l, _v) in enumerate(MATCHES_J7):
             marc[num] = (_to_int(r[2 + 3 * k]), _to_int(r[3 + 3 * k]), r[4 + 3 * k])
@@ -153,20 +160,56 @@ def cargar_predicciones_playoff(sheet='Form Responses 1'):
     return preds
 
 
-def cargar_resultados_playoff(jornada=7):
-    """Devuelve ({num: ResultadoPlayoff}, total_rojas, total_penales)."""
-    if not os.path.exists(RESULTADOS_JSON):
+def _resultados_desde_excel(sheet='Form Responses 1'):
+    """Lee la fila de RESULTADOS reales del Excel de playoffs (la fila 'Respuesta').
+    Devuelve ({num: ResultadoPlayoff}, total_rojas, total_penales)."""
+    if not os.path.exists(PLAYOFF_XLSX):
         return {}, None, None
-    with open(RESULTADOS_JSON, encoding='utf-8') as f:
-        data = json.load(f)
-    j = data.get(str(jornada), {}) or {}
-    reales = {}
-    for num, v in (j.get('marcadores') or {}).items():
-        if not v:
+    wb = openpyxl.load_workbook(PLAYOFF_XLSX, read_only=True, data_only=True)
+    ws = wb[sheet]
+    reales, rojas, penales = {}, None, None
+    for r in ws.iter_rows(values_only=True):
+        if len(r) < 2 or not _es_fila_resultado(r[1]):
             continue
-        gl, gv, pg = (list(v) + [None, None, None])[:3]
-        reales[int(num)] = ResultadoPlayoff(int(num), gl, gv, pg)
-    return reales, j.get('total_rojas'), j.get('total_penales')
+        for k, (num, local, visit) in enumerate(MATCHES_J7):
+            gl, gv, eq = _to_int(r[2 + 3 * k]), _to_int(r[3 + 3 * k]), r[4 + 3 * k]
+            if gl is None or gv is None:
+                continue  # ese partido aún no tiene resultado
+            pg = _primer_gol_lv(eq, local, visit) if (gl + gv) > 0 else None  # 0-0 → sin primer gol
+            reales[num] = ResultadoPlayoff(num, gl, gv, pg)
+        rojas = _to_int(r[2 + 3 * len(MATCHES_J7)])
+        penales = _to_int(r[3 + 3 * len(MATCHES_J7)])
+    return reales, rojas, penales
+
+
+def cargar_resultados_playoff(jornada=7):
+    """Devuelve ({num: ResultadoPlayoff}, total_rojas, total_penales).
+
+    Fuente principal: la fila 'Respuesta' del Excel de playoffs. Opcionalmente,
+    data/resultados_playoffs.json puede sobreescribir partidos puntuales.
+    Los bonos (rojas/penales) solo cuentan cuando la ronda ya tiene sus 8 partidos.
+    """
+    reales, rojas, penales = _resultados_desde_excel()
+
+    # Override manual opcional (JSON): gana sobre el Excel si tiene entradas.
+    if os.path.exists(RESULTADOS_JSON):
+        with open(RESULTADOS_JSON, encoding='utf-8') as f:
+            data = json.load(f)
+        j = data.get(str(jornada), {}) or {}
+        for num, v in (j.get('marcadores') or {}).items():
+            if not v:
+                continue
+            gl, gv, pg = (list(v) + [None, None, None])[:3]
+            reales[int(num)] = ResultadoPlayoff(int(num), gl, gv, pg)
+        if j.get('total_rojas') is not None:
+            rojas = j['total_rojas']
+        if j.get('total_penales') is not None:
+            penales = j['total_penales']
+
+    # Los bonos de la ronda solo se cierran cuando están los 8 partidos.
+    if len(reales) < len(MATCHES_J7):
+        rojas = penales = None
+    return reales, rojas, penales
 
 
 def cruces_j7():
