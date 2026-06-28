@@ -35,35 +35,41 @@ const PARTICIPANTES = [
 
 // ── Rondas de playoffs ──────────────────────────────────────────────────
 // Una ronda = una jornada de playoff (todos los vivos predicen estos partidos).
-// Los #num siguen después del 72 (la fase de grupos fue #1–#72).
-// EDITA local/visitante con los cruces reales cuando se conozcan.
+// Los #num siguen después del 72 (la fase de grupos fue #1–#72), así que en
+// numeración FIFA los dieciseisavos son #73–#88. La quiniela usa SOLO los
+// primeros 8 (#73–#80) para la primera ronda de playoffs (J7).
+//
+// J7 ya está lista con sus 8 partidos. Cuando termine la fase de grupos, solo
+// EDITA local/visitante de cada uno con los equipos reales (deja los num igual).
+// Las rondas siguientes (octavos, cuartos, …) se definen después: están abajo
+// comentadas como plantilla.
 const RONDAS = [
   {
-    clave: 'J7', titulo: 'Playoffs J7', fechas: 'por definir',
+    clave: 'J7', titulo: 'Playoffs J7 — Dieciseisavos (primeros 8)', fechas: 'por definir',
     partidos: [
       { num: 73, local: 'Equipo A', visitante: 'Equipo B' },
       { num: 74, local: 'Equipo C', visitante: 'Equipo D' },
-      // … agrega los partidos de esta ronda
+      { num: 75, local: 'Equipo E', visitante: 'Equipo F' },
+      { num: 76, local: 'Equipo G', visitante: 'Equipo H' },
+      { num: 77, local: 'Equipo I', visitante: 'Equipo J' },
+      { num: 78, local: 'Equipo K', visitante: 'Equipo L' },
+      { num: 79, local: 'Equipo M', visitante: 'Equipo N' },
+      { num: 80, local: 'Equipo O', visitante: 'Equipo P' },
     ],
   },
-  {
-    clave: 'J8', titulo: 'Playoffs J8', fechas: 'por definir',
-    partidos: [
-      { num: 81, local: 'Equipo A', visitante: 'Equipo B' },
-    ],
-  },
-  {
-    clave: 'J9', titulo: 'Playoffs J9', fechas: 'por definir',
-    partidos: [
-      { num: 91, local: 'Equipo A', visitante: 'Equipo B' },
-    ],
-  },
-  {
-    clave: 'J10', titulo: 'Playoffs J10 (Final del Sótano)', fechas: 'por definir',
-    partidos: [
-      { num: 101, local: 'Equipo A', visitante: 'Equipo B' },
-    ],
-  },
+
+  // ── Rondas siguientes (por definir según avance el bracket) ──────────────
+  // Descomenta y edita cuando se conozcan los cruces:
+  //
+  // { clave: 'J8', titulo: 'Playoffs J8 — Octavos', fechas: 'por definir',
+  //   partidos: [
+  //     { num: 89, local: 'Equipo A', visitante: 'Equipo B' },
+  //     // … octavos
+  //   ],
+  // },
+  // { clave: 'J9', titulo: 'Playoffs J9 — Cuartos', fechas: 'por definir',
+  //   partidos: [ { num: 97, local: 'Equipo A', visitante: 'Equipo B' } ],
+  // },
 ];
 
 // ================================================================
