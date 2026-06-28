@@ -1,0 +1,454 @@
+"""
+Genera un PDF (HTML imprimible) por cada CRUCE head-to-head de playoffs.
+
+Cada archivo muestra, lado a lado, las predicciones de los dos rivales de un
+cruce, con sus caricaturas, una columna central de RESULTADO REAL y los PUNTOS
+que cada quien gana en cada partido (3 exacto / 2 resultado / +1 primer gol),
+más los bonos de la ronda (rojas y penales).
+
+- Cruces: del bracket real (tabla final de la temporada regular).
+- Predicciones: "Respuestas Quiniela 2026 Playoffs.xlsx".
+- Resultados reales: data/resultados_playoffs.json (se llena conforme se juega).
+
+Uso:
+    py reports/h2h_playoff.py            # genera todos los cruces de la J7
+"""
+import base64
+import json
+import os
+import re
+import sys
+import webbrowser
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+import openpyxl
+
+from data.loader import cargar_participantes
+from data.historial_io import cargar_historial_resultados
+from quiniela.standings import calcular_tabla_general
+from quiniela import playoffs
+from quiniela.models import PrediccionPlayoff, ResultadoPlayoff
+from quiniela.playoff_scorer import puntos_partido, BONUS_ROJAS, BONUS_PENALES
+from reports.generar_reporte import _CARICATURA_FILE
+
+ROOT = os.path.join(os.path.dirname(__file__), '..')
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'output')
+DOCS_DIR = os.path.join(ROOT, 'docs')
+PLAYOFF_XLSX = os.path.join(ROOT, 'Respuestas Quiniela 2026 Playoffs.xlsx')
+RESULTADOS_JSON = os.path.join(ROOT, 'data', 'resultados_playoffs.json')
+CARICATURAS_DIR = os.path.join(ROOT, 'Caricaturas')
+
+# Partidos de la ronda J7 (deben coincidir con forms/crear_forms_playoffs.js).
+MATCHES_J7 = [
+    (73, 'Sudáfrica', 'Canadá'),
+    (74, 'Brasil', 'Japón'),
+    (75, 'Alemania', 'Paraguay'),
+    (76, 'Países Bajos', 'Marruecos'),
+    (77, 'Costa de Marfil', 'Noruega'),
+    (78, 'Francia', 'Suecia'),
+    (79, 'México', 'Ecuador'),
+    (80, 'Inglaterra', 'RD Congo'),
+]
+
+RONDA_TITULO = 'Playoffs J7 · Dieciseisavos (primeros 8)'
+
+_CSS = """
+  :root{--bg:#0b1020;--card:#141c2e;--bg2:#0f1523;--border:rgba(255,255,255,.08);
+    --cyan:#00d4ff;--verde:#2ed573;--rojo:#ff4757;--dorado:#ffd700;--txt:#e6ecf7;
+    --txt2:#8d99af;--gris:#5a6a80;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--txt);}
+  .hdr{background:linear-gradient(108deg,#00d8ec 0%,#1248c8 38%,#7218a8 66%,#3a0068 100%);
+       padding:16px 22px;color:#fff;}
+  .hdr-eyebrow{font-size:.74rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.9;}
+  .hdr-llave{display:inline-block;margin-top:6px;font-size:.72rem;font-weight:800;letter-spacing:.5px;
+       padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.16);}
+  .wrap{max-width:780px;margin:0 auto;padding:14px 12px 26px;}
+  /* La grilla del header usa los MISMOS anchos que las columnas de la tabla
+     (ver <colgroup>): así cada caricatura queda justo sobre su columna. */
+  .vs{display:grid;grid-template-columns:34% 22% 22% 22%;align-items:center;margin:12px 0 6px;}
+  .side{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;}
+  .av{width:78px;height:78px;border-radius:50%;object-fit:cover;border:3px solid var(--cyan);
+      background:var(--card);}
+  .side.b .av{border-color:var(--dorado);}
+  .av-ph{width:78px;height:78px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-weight:900;font-size:1.4rem;background:var(--card);border:3px solid var(--cyan);color:var(--txt2);}
+  .side.b .av-ph{border-color:var(--dorado);}
+  .nm{font-size:1.15rem;font-weight:900;color:var(--cyan);text-align:center;}
+  .side.b .nm{color:var(--dorado);}
+  .vs-mid{display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .vs-x{font-size:.8rem;font-weight:900;color:var(--txt2);}
+  .vs-score{font-size:1.6rem;font-weight:900;color:var(--txt);letter-spacing:1px;white-space:nowrap;}
+  .vs-score .a{color:var(--cyan);} .vs-score .b{color:var(--dorado);}
+  .gana{font-size:.62rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+        padding:2px 8px;border-radius:999px;background:rgba(46,213,115,.18);color:var(--verde);}
+  table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:6px;}
+  th,td{padding:6px 5px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+  th{color:var(--txt2);font-size:.62rem;text-transform:uppercase;letter-spacing:.4px;font-weight:700;}
+  th.real,td.real{background:rgba(255,255,255,.035);}
+  th.pa,td.pa{text-align:left;color:var(--txt2);font-size:.74rem;}
+  td.pa b{color:var(--txt);}
+  .mk{font-size:1.02rem;font-weight:900;display:inline-block;}
+  .mk.real{color:var(--txt);}
+  .pg{display:block;font-size:.62rem;color:var(--txt2);margin-top:1px;}
+  .porjugar{color:var(--gris);font-style:italic;font-size:.72rem;}
+  .pend{color:var(--gris);font-style:italic;font-weight:700;font-size:.74rem;}
+  .badge{display:inline-block;margin-top:5px;font-size:.78rem;font-weight:900;padding:2px 11px;
+         border-radius:999px;border:1.5px solid transparent;line-height:1.25;}
+  .badge.a{background:rgba(0,212,255,.22);color:var(--cyan);border-color:rgba(0,212,255,.65);
+           box-shadow:0 0 11px rgba(0,212,255,.3);}
+  .badge.b{background:rgba(255,215,0,.22);color:var(--dorado);border-color:rgba(255,215,0,.65);
+           box-shadow:0 0 11px rgba(255,215,0,.3);}
+  .badge.zero{background:rgba(141,153,175,.12);color:var(--gris);border-color:transparent;box-shadow:none;}
+  tr.bono td{background:rgba(255,255,255,.03);}
+  tr.bono .pa b{color:var(--cyan);}
+  tr.tot td{border-top:2px solid var(--border);border-bottom:none;font-weight:900;}
+  tr.tot .a{color:var(--cyan);font-size:1.05rem;} tr.tot .b{color:var(--dorado);font-size:1.05rem;}
+  .nota{margin-top:14px;padding:11px 12px;border-radius:10px;font-size:.76rem;line-height:1.5;
+    background:linear-gradient(180deg,rgba(0,212,255,.08),rgba(0,212,255,.02));
+    border:1px solid rgba(0,212,255,.25);color:var(--txt2);}
+  .nota b{color:var(--txt);}
+  .foot{text-align:center;color:var(--gris);font-size:.72rem;padding:12px;}
+  @media print{@page{size:A4;margin:0;}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .wrap{max-width:100%;}}
+"""
+
+
+# ── Datos ────────────────────────────────────────────────────────────────────
+def _to_int(v):
+    try:
+        return int(float(v))
+    except (TypeError, ValueError):
+        return None
+
+
+def _primer_gol_lv(equipo, local, visit):
+    """Convierte el equipo del primer gol (nombre) a 'L'/'V'."""
+    if equipo == local:
+        return 'L'
+    if equipo == visit:
+        return 'V'
+    return None
+
+
+def cargar_predicciones_playoff(sheet='Form Responses 1'):
+    """{nombre: {'marcadores': {num:(gl,gv,equipo_primer)}, 'rojas': int, 'penales': int}}."""
+    wb = openpyxl.load_workbook(PLAYOFF_XLSX, read_only=True, data_only=True)
+    ws = wb[sheet]
+    rows = list(ws.iter_rows(values_only=True))
+    preds = {}
+    for r in rows[1:]:
+        nombre = r[1]
+        if not nombre:
+            continue
+        marc = {}
+        for k, (num, _l, _v) in enumerate(MATCHES_J7):
+            marc[num] = (_to_int(r[2 + 3 * k]), _to_int(r[3 + 3 * k]), r[4 + 3 * k])
+        preds[nombre] = {
+            'marcadores': marc,
+            'rojas': _to_int(r[2 + 3 * len(MATCHES_J7)]),
+            'penales': _to_int(r[3 + 3 * len(MATCHES_J7)]),
+        }
+    return preds
+
+
+def cargar_resultados_playoff(jornada=7):
+    """Devuelve ({num: ResultadoPlayoff}, total_rojas, total_penales)."""
+    if not os.path.exists(RESULTADOS_JSON):
+        return {}, None, None
+    with open(RESULTADOS_JSON, encoding='utf-8') as f:
+        data = json.load(f)
+    j = data.get(str(jornada), {}) or {}
+    reales = {}
+    for num, v in (j.get('marcadores') or {}).items():
+        if not v:
+            continue
+        gl, gv, pg = (list(v) + [None, None, None])[:3]
+        reales[int(num)] = ResultadoPlayoff(int(num), gl, gv, pg)
+    return reales, j.get('total_rojas'), j.get('total_penales')
+
+
+def cruces_j7():
+    """[(jugadorA, jugadorB, llave)] de los cuartos de la J7."""
+    tabla = calcular_tabla_general(cargar_participantes(), cargar_historial_resultados())
+    seeds = playoffs.sembrar(tabla)
+    cruces = [(a, b, 'campeones') for _id, a, b in playoffs._campeones_cuartos(seeds)]
+    cruces += [(a, b, 'sotano') for _id, a, b in playoffs._sotano_cuartos(seeds)]
+    return cruces
+
+
+def _avatar_data_url(nombre):
+    fname = _CARICATURA_FILE.get(nombre)
+    if not fname:
+        return None
+    fpath = os.path.join(CARICATURAS_DIR, fname)
+    if not os.path.exists(fpath):
+        return None
+    with open(fpath, 'rb') as f:
+        b64 = base64.b64encode(f.read()).decode()
+    mime = 'image/png' if fname.lower().endswith('.png') else 'image/jpeg'
+    return f'data:{mime};base64,{b64}'
+
+
+# ── Render ───────────────────────────────────────────────────────────────────
+def _avatar_html(nombre, lado):
+    url = _avatar_data_url(nombre)
+    if url:
+        return f'<img class="av" src="{url}" alt="{nombre}">'
+    ini = ''.join(w[0] for w in nombre.split()[:2]).upper()
+    return f'<div class="av-ph">{ini}</div>'
+
+
+def _celda_pred(pred, num, local, visit, real, lado):
+    """(html, puntos|None) de la predicción de un jugador en un partido."""
+    if pred is None:
+        return '<span class="pend">— pendiente —</span>', None
+    gl, gv, eq = pred['marcadores'].get(num, (None, None, None))
+    if gl is None or gv is None:
+        return '<span class="pend">—</span>', None
+    html = f'<span class="mk">{gl}–{gv}</span><span class="pg">1er: {eq or "—"}</span>'
+    pts = None
+    if real is not None:
+        po = PrediccionPlayoff('', num, gl, gv, _primer_gol_lv(eq, local, visit))
+        pts = puntos_partido(po, real)
+        cls = 'zero' if pts == 0 else lado
+        html += f'<span class="badge {cls}">+{pts}</span>'
+    return html, pts
+
+
+def _celda_real(real, local, visit):
+    if real is None:
+        return '<span class="porjugar">por jugar</span>'
+    eq = {'L': local, 'V': visit}.get(real.primer_gol, '— (0-0)')
+    return (f'<span class="mk real">{real.goles_local}–{real.goles_visitante}</span>'
+            f'<span class="pg">1er: {eq}</span>')
+
+
+def _bono_pred(pred, clave, real_total, lado):
+    if pred is None:
+        return '<span class="pend">—</span>', None
+    val = pred.get(clave)
+    html = f'<span class="mk">{val if val is not None else "—"}</span>'
+    pts = None
+    if real_total is not None and val is not None:
+        bonus = BONUS_ROJAS if clave == 'rojas' else BONUS_PENALES
+        pts = bonus if val == real_total else 0
+        cls = 'zero' if pts == 0 else lado
+        html += f'<span class="badge {cls}">+{pts}</span>'
+    return html, pts
+
+
+def _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real):
+    pa, pb = preds.get(a), preds.get(b)
+    llave_txt = ('🏆 Campeones · Cuartos' if llave == 'campeones'
+                 else '🚽 Sótano (Toilet Playoffs) · Cuartos')
+    tot_a = tot_b = 0
+    hay_pts = False
+
+    filas = ''
+    for num, local, visit in MATCHES_J7:
+        real = reales.get(num)
+        ca, pa_pts = _celda_pred(pa, num, local, visit, real, 'a')
+        cb, pb_pts = _celda_pred(pb, num, local, visit, real, 'b')
+        if pa_pts is not None:
+            tot_a += pa_pts; hay_pts = True
+        if pb_pts is not None:
+            tot_b += pb_pts; hay_pts = True
+        filas += (
+            f'<tr><td class="pa">#{num} <b>{local}</b> vs <b>{visit}</b></td>'
+            f'<td>{ca}</td><td class="real">{_celda_real(real, local, visit)}</td><td>{cb}</td></tr>'
+        )
+
+    # bonos
+    for clave, etq, real_total in (('rojas', '🟥 Total rojas', rojas_real),
+                                   ('penales', '🎯 Total penales', penales_real)):
+        ba, ba_pts = _bono_pred(pa, clave, real_total, 'a')
+        bb, bb_pts = _bono_pred(pb, clave, real_total, 'b')
+        if ba_pts is not None:
+            tot_a += ba_pts; hay_pts = True
+        if bb_pts is not None:
+            tot_b += bb_pts; hay_pts = True
+        real_txt = (f'<span class="mk real">{real_total}</span>'
+                    if real_total is not None else '<span class="porjugar">—</span>')
+        filas += (f'<tr class="bono"><td class="pa"><b>{etq}</b></td>'
+                  f'<td>{ba}</td><td class="real">{real_txt}</td><td>{bb}</td></tr>')
+
+    # total
+    filas += (f'<tr class="tot"><td class="pa"><b>TOTAL</b></td>'
+              f'<td class="a">{tot_a}</td><td class="real"></td><td class="b">{tot_b}</td></tr>')
+
+    # marcador del cruce + líder
+    score = f'<span class="a">{tot_a}</span> – <span class="b">{tot_b}</span>'
+    lider = ''
+    if hay_pts and tot_a != tot_b:
+        ganador = a if tot_a > tot_b else b
+        lider = f'<span class="gana">▲ {ganador} va arriba</span>'
+
+    faltan = [n for n, p in ((a, pa), (b, pb)) if p is None]
+    aviso = ''
+    if faltan:
+        aviso = (f'<div class="nota" style="border-color:rgba(255,71,87,.4);'
+                 f'background:rgba(255,71,87,.07)">⏳ Falta(n) por enviar sus predicciones: '
+                 f'<b>{", ".join(faltan)}</b>.</div>')
+
+    return f"""<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{a} vs {b} — Playoffs J7</title><style>{_CSS}</style></head>
+<body>
+<header class="hdr">
+  <div class="hdr-eyebrow">⚽ {RONDA_TITULO}</div>
+  <div class="hdr-llave">{llave_txt}</div>
+</header>
+<div class="wrap">
+  <div class="vs">
+    <div></div>
+    <div class="side a">{_avatar_html(a, 'a')}<div class="nm">{a}</div></div>
+    <div class="vs-mid"><span class="vs-x">VS</span><span class="vs-score">{score}</span>{lider}</div>
+    <div class="side b">{_avatar_html(b, 'b')}<div class="nm">{b}</div></div>
+  </div>
+  <table>
+    <colgroup><col style="width:34%"><col style="width:22%"><col style="width:22%"><col style="width:22%"></colgroup>
+    <thead><tr><th class="pa">Partido</th><th>{a}</th><th class="real">Resultado real</th><th>{b}</th></tr></thead>
+    <tbody>{filas}</tbody>
+  </table>
+  {aviso}
+  <div class="nota">Puntos por partido: <b>marcador exacto = 3</b>, <b>solo resultado = 2</b>,
+  <b>primer gol = +1</b> (máx 4). Bonos: <b>+2</b> rojas exactas, <b>+2</b> penales exactos.
+  Avanza quien sume más puntos en la ronda. Los partidos "por jugar" aún no otorgan puntos.</div>
+</div>
+<div class="foot">Quiniela Mundial 2026 — Playoffs · cruce {a} vs {b}</div>
+</body></html>"""
+
+
+def _slug(nombre):
+    s = (nombre.lower().replace('á', 'a').replace('é', 'e').replace('í', 'i')
+         .replace('ó', 'o').replace('ú', 'u'))
+    return re.sub(r'[^a-z0-9]+', '_', s).strip('_')
+
+
+_LANDING_CSS = """
+  :root{--bg:#0b1020;--card:#141c2e;--bg2:#0f1523;--border:rgba(255,255,255,.08);
+    --cyan:#00d4ff;--dorado:#ffd700;--txt:#e6ecf7;--txt2:#8d99af;--gris:#5a6a80;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--txt);}
+  .hdr{background:linear-gradient(108deg,#00d8ec 0%,#1248c8 38%,#7218a8 66%,#3a0068 100%);padding:18px 22px;color:#fff;}
+  .hdr-title{font-size:1.5rem;font-weight:900;}
+  .hdr-sub{font-size:.82rem;opacity:.9;margin-top:3px;}
+  .wrap{max-width:880px;margin:0 auto;padding:14px 14px 30px;}
+  .back{display:inline-block;margin:4px 0 10px;color:var(--cyan);text-decoration:none;font-weight:700;font-size:.82rem;}
+  .grupo-t{font-size:.78rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--txt2);margin:16px 2px 9px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
+  .lc{display:block;background:var(--card);border:1px solid var(--border);border-radius:14px;
+      padding:14px 12px;text-decoration:none;color:var(--txt);transition:border-color .15s;}
+  .lc:hover{border-color:var(--cyan);}
+  .lc.pend{opacity:.9;}
+  .lc-vs{display:flex;align-items:center;justify-content:space-around;gap:6px;}
+  .lc-side{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:0;}
+  .lc .av{width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid var(--cyan);background:var(--bg2);}
+  .lc-side.b .av{border-color:var(--dorado);}
+  .lc .av-ph{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+         font-weight:900;background:var(--bg2);border:3px solid var(--cyan);color:var(--txt2);}
+  .lc-side.b .av-ph{border-color:var(--dorado);}
+  .lc-nm{font-size:.95rem;font-weight:900;color:var(--cyan);text-align:center;}
+  .lc-nm.b{color:var(--dorado);}
+  .lc-x{font-size:.72rem;font-weight:900;color:var(--gris);}
+  .lc-pend{margin-top:10px;text-align:center;font-size:.72rem;font-weight:800;color:#ff6b81;
+           background:rgba(255,71,87,.1);border-radius:999px;padding:3px 8px;}
+  .lc-cta{margin-top:10px;text-align:center;font-size:.75rem;font-weight:800;color:var(--cyan);}
+  .lc.pend .lc-cta{color:var(--txt2);}
+  .foot{text-align:center;color:var(--gris);font-size:.72rem;padding:14px;}
+"""
+
+
+def _landing_html(info):
+    """Página de acceso a los cruces (info = [(ruta, a, b, llave, faltan)])."""
+    grupos = {}
+    for ruta, a, b, llave, faltan in info:
+        grupos.setdefault(llave, []).append((os.path.basename(ruta), a, b, faltan))
+
+    def _card(fname, a, b, faltan):
+        pend = f'<div class="lc-pend">⏳ Falta: {", ".join(faltan)}</div>' if faltan else ''
+        cta = 'Ver (incompleto) →' if faltan else 'Ver predicciones →'
+        return f"""
+        <a class="lc{' pend' if faltan else ''}" href="{fname}">
+          <div class="lc-vs">
+            <div class="lc-side">{_avatar_html(a, 'a')}<span class="lc-nm">{a}</span></div>
+            <span class="lc-x">VS</span>
+            <div class="lc-side b">{_avatar_html(b, 'b')}<span class="lc-nm b">{b}</span></div>
+          </div>
+          {pend}
+          <div class="lc-cta">{cta}</div>
+        </a>"""
+
+    secciones = ''
+    for llave, titulo in (('campeones', '🏆 Campeones · Cuartos'),
+                          ('sotano', '🚽 Sótano (Toilet Playoffs) · Cuartos')):
+        if not grupos.get(llave):
+            continue
+        cards = ''.join(_card(*c) for c in grupos[llave])
+        secciones += f'<div class="grupo-t">{titulo}</div><div class="grid">{cards}</div>'
+
+    return f"""<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+<title>Cruces Playoffs J7 — Quiniela Mundial 2026</title><style>{_LANDING_CSS}</style></head>
+<body>
+<header class="hdr">
+  <div class="hdr-title">⚔️ Cruces Playoffs · Jornada 7</div>
+  <div class="hdr-sub">Dieciseisavos — predicciones head-to-head de cada cruce</div>
+</header>
+<div class="wrap">
+  <a class="back" href="index.html">← Volver a la tabla</a>
+  {secciones}
+</div>
+<div class="foot">Quiniela Mundial 2026 — Playoffs J7</div>
+</body></html>"""
+
+
+def _escribir_cruces(output_dir):
+    """Escribe un HTML por cruce en output_dir. Devuelve [(ruta, a, b, llave, faltan)]."""
+    preds = cargar_predicciones_playoff()
+    reales, rojas_real, penales_real = cargar_resultados_playoff(7)
+    cruces = cruces_j7()
+    os.makedirs(output_dir, exist_ok=True)
+    info = []
+    for a, b, llave in cruces:
+        html = _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real)
+        fname = f'h2h_j7_{_slug(a)}_vs_{_slug(b)}.html'
+        with open(os.path.join(output_dir, fname), 'w', encoding='utf-8') as f:
+            f.write(html)
+        faltan = [x for x in (a, b) if preds.get(x) is None]
+        info.append((os.path.join(output_dir, fname), a, b, llave, faltan))
+    return info
+
+
+def generar(output_dir=OUTPUT_DIR):
+    """Genera los cruces (por defecto en reports/output). [(ruta,a,b,llave,completos)]."""
+    return [(r, a, b, llave, not faltan) for r, a, b, llave, faltan in _escribir_cruces(output_dir)]
+
+
+def generar_web():
+    """Genera los cruces en docs/ + la página de acceso docs/cruces_j7.html."""
+    info = _escribir_cruces(DOCS_DIR)
+    landing = _landing_html(info)
+    lpath = os.path.join(DOCS_DIR, 'cruces_j7.html')
+    with open(lpath, 'w', encoding='utf-8') as f:
+        f.write(landing)
+    return lpath, info
+
+
+if __name__ == '__main__':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except AttributeError:
+        pass
+    rutas = generar()
+    print(f'{len(rutas)} cruce(s) generados en {OUTPUT_DIR}:')
+    for ruta, a, b, llave, completos in rutas:
+        estado = 'completo' if completos else 'FALTA alguien'
+        print(f'   [{llave:9}] {a} vs {b:12} -> {os.path.basename(ruta)}  ({estado})')
+    if rutas:
+        webbrowser.open(f'file:///{rutas[0][0].replace(os.sep, "/")}')

@@ -1012,6 +1012,7 @@ def _build_index_html(d: dict) -> str:
 <div class="wrap">
   {cta}
   <a class="po-btn" href="playoffs.html">🏆 Ver Playoffs (proyección) 💩</a>
+  <a class="po-btn" href="cruces_j7.html">⚔️ Cruces J7 · predicciones H2H</a>
   {intro}
   {como}
   {reglas}
