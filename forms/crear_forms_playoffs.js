@@ -45,16 +45,16 @@ const PARTICIPANTES = [
 // comentadas como plantilla.
 const RONDAS = [
   {
-    clave: 'J7', titulo: 'Playoffs J7 — Dieciseisavos (primeros 8)', fechas: 'por definir',
+    clave: 'J7', titulo: 'Playoffs J7 — Dieciseisavos (primeros 8)', fechas: '28 jun – 1 jul',
     partidos: [
-      { num: 73, local: 'Equipo A', visitante: 'Equipo B' },
-      { num: 74, local: 'Equipo C', visitante: 'Equipo D' },
-      { num: 75, local: 'Equipo E', visitante: 'Equipo F' },
-      { num: 76, local: 'Equipo G', visitante: 'Equipo H' },
-      { num: 77, local: 'Equipo I', visitante: 'Equipo J' },
-      { num: 78, local: 'Equipo K', visitante: 'Equipo L' },
-      { num: 79, local: 'Equipo M', visitante: 'Equipo N' },
-      { num: 80, local: 'Equipo O', visitante: 'Equipo P' },
+      { num: 73, local: 'Sudáfrica',       visitante: 'Canadá',    fecha: 'Dom 28 jun · 1:00 PM' },
+      { num: 74, local: 'Brasil',          visitante: 'Japón',     fecha: 'Lun 29 jun · 11:00 AM' },
+      { num: 75, local: 'Alemania',        visitante: 'Paraguay',  fecha: 'Lun 29 jun · 2:30 PM' },
+      { num: 76, local: 'Países Bajos',    visitante: 'Marruecos', fecha: 'Lun 29 jun · 7:00 PM' },
+      { num: 77, local: 'Costa de Marfil', visitante: 'Noruega',   fecha: 'Mar 30 jun · 11:00 AM' },
+      { num: 78, local: 'Francia',         visitante: 'Suecia',    fecha: 'Mar 30 jun · 3:00 PM' },
+      { num: 79, local: 'México',          visitante: 'Ecuador',   fecha: 'Mar 30 jun · 7:00 PM' },
+      { num: 80, local: 'Inglaterra',      visitante: 'RD Congo',  fecha: 'Mié 1 jul · 10:00 AM' },
     ],
   },
 
@@ -128,7 +128,7 @@ function crearFormRonda(ronda, carpeta, ss) {
   ronda.partidos.forEach(function(p) {
     form.addSectionHeaderItem()
       .setTitle('#' + p.num + '  ' + p.local + '  vs  ' + p.visitante)
-      .setHelpText('Marcador al minuto 90 (sin prorroga/penales).');
+      .setHelpText((p.fecha ? p.fecha + '  ·  ' : '') + 'Marcador al minuto 90 (sin prorroga/penales).');
 
     form.addTextItem()
       .setTitle('#' + p.num + '  Goles de ' + p.local)
