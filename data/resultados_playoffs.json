@@ -1,7 +1,9 @@
 {
   "_comment": "Resultados reales de PLAYOFFS. Por jornada: 'marcadores' = { '<num>': [goles_local, goles_visitante, primer_gol] } con primer_gol = 'L' (local), 'V' (visitante) o null si fue 0-0. Marcador al minuto 90 (sin prorroga/penales). 'total_rojas'/'total_penales' = totales de la ronda (null si aun no se cierra). Agrega un partido solo cuando termine; los que falten salen como 'por jugar'.",
   "7": {
-    "marcadores": {},
+    "marcadores": {
+      "73": [0, 0, null]
+    },
     "total_rojas": null,
     "total_penales": null
   }

@@ -9,15 +9,34 @@ y reescribe los archivos reports/output/h2h_j7_*.html (predicciones + resultado
 real + puntos por partido). Para PDF: abre cada uno y Ctrl+P → "Guardar como PDF".
 
 Uso:
-    py actualiza7.py            # regenera los 5 cruces y abre el primero
-    py actualiza7.py --no-open  # regenera sin abrir el navegador
+    py actualiza7.py             # regenera los 5 cruces y abre el primero
+    py actualiza7.py --no-open   # regenera sin abrir el navegador
+    py actualiza7.py --publicar  # regenera + git add/commit/push (sube a la web)
 """
+import datetime
 import os
+import subprocess
 import sys
 import webbrowser
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
+
+
+def _publicar():
+    """git add -A + commit (si hay cambios) + push."""
+    print("== publicando en GitHub ==")
+    subprocess.run(['git', 'add', '-A'], cwd=ROOT, check=True)
+    hay_cambios = subprocess.run(['git', 'diff', '--cached', '--quiet'], cwd=ROOT).returncode != 0
+    if hay_cambios:
+        fecha = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+        subprocess.run(['git', 'commit', '-m', f'playoffs J7: actualiza cruces ({fecha})'],
+                       cwd=ROOT, check=True)
+    else:
+        print("  (sin cambios nuevos para commitear)")
+    subprocess.run(['git', 'push'], cwd=ROOT, check=True)
+    print("  ✅ publicado. Link: https://morenomjorge8.github.io/quiniela-mundial-2026/cruces_j7.html"
+          f"?v={datetime.datetime.now().strftime('%m%d%H%M')}")
 
 
 def main():
@@ -38,9 +57,15 @@ def main():
         print(f"   [{llave:9}] {a} vs {b:12} -> {os.path.basename(ruta)}  {estado}")
     print(f"\n{completos}/{len(rutas)} con ambos rivales.")
     print(f"   PDFs:    reports/output/  (Ctrl+P → Guardar como PDF)")
-    print(f"   Web:     docs/  (landing: {os.path.basename(landing)}) — publica con git push")
+    print(f"   Web:     docs/  (landing: {os.path.basename(landing)})")
 
-    if '--no-open' not in sys.argv and rutas:
+    if '--publicar' in sys.argv:
+        _publicar()
+    else:
+        print("   (para subir a la web: 'git push'  o  'py actualiza7.py --publicar')")
+
+    abrir = '--no-open' not in sys.argv and '--publicar' not in sys.argv
+    if abrir and rutas:
         webbrowser.open(f'file:///{rutas[0][0].replace(os.sep, "/")}')
 
 
