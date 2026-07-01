@@ -7,11 +7,15 @@ que cada quien gana en cada partido (3 exacto / 2 resultado / +1 primer gol),
 más los bonos de la ronda (rojas y penales).
 
 - Cruces: del bracket real (tabla final de la temporada regular).
-- Predicciones: "Respuestas Quiniela 2026 Playoffs.xlsx".
-- Resultados reales: data/resultados_playoffs.json (se llena conforme se juega).
+  · J7 = Cuartos (primeros 8 dieciseisavos, #73–80).
+  · J8 = Semifinales (segundos 8 dieciseisavos, #81–88); los cruces salen de
+    resolver los cuartos con los puntos de la J7.
+- Predicciones: "Respuestas Quiniela 2026 Playoffs.xlsx" (hoja por ronda).
+- Resultados reales: fila 'Respuesta' en la hoja de esa ronda (+ override en
+  data/resultados_playoffs.json).
 
 Uso:
-    py reports/h2h_playoff.py            # genera todos los cruces de la J7
+    py reports/h2h_playoff.py            # genera J7 y J8 (reports/output/)
 """
 import base64
 import json
@@ -39,7 +43,7 @@ PLAYOFF_XLSX = os.path.join(ROOT, 'Respuestas Quiniela 2026 Playoffs.xlsx')
 RESULTADOS_JSON = os.path.join(ROOT, 'data', 'resultados_playoffs.json')
 CARICATURAS_DIR = os.path.join(ROOT, 'Caricaturas')
 
-# Partidos de la ronda J7 (deben coincidir con forms/crear_forms_playoffs.js).
+# Partidos por ronda (deben coincidir con forms/crear_forms_playoffs.js).
 MATCHES_J7 = [
     (73, 'Sudáfrica', 'Canadá'),
     (74, 'Brasil', 'Japón'),
@@ -50,11 +54,30 @@ MATCHES_J7 = [
     (79, 'México', 'Ecuador'),
     (80, 'Inglaterra', 'RD Congo'),
 ]
+MATCHES_J8 = [
+    (81, 'Bélgica', 'Senegal'),
+    (82, 'Estados Unidos', 'Bosnia y Herzegovina'),
+    (83, 'España', 'Austria'),
+    (84, 'Portugal', 'Croacia'),
+    (85, 'Suiza', 'Argelia'),
+    (86, 'Australia', 'Egipto'),
+    (87, 'Argentina', 'Cabo Verde'),
+    (88, 'Colombia', 'Ghana'),
+]
 
-RONDA_TITULO = 'Playoffs J7 · Dieciseisavos (primeros 8)'
+JORNADAS = (7, 8)
+MATCHES = {7: MATCHES_J7, 8: MATCHES_J8}
+# Hoja del Excel donde llegan las respuestas de cada ronda.
+SHEET = {7: 'Form Responses 1', 8: 'j8'}
+RONDA_TITULO = {
+    7: 'Playoffs J7 · Dieciseisavos (primeros 8)',
+    8: 'Playoffs J8 · Dieciseisavos (2ª tanda)',
+}
+RONDA_NOMBRE = {7: 'Cuartos', 8: 'Semifinales'}
 
-# Form de predicciones de la ronda siguiente (J8).
+# Form de predicciones de la ronda en curso (botón en la landing).
 FORM_J8_URL = 'https://forms.gle/S7jBrrYNqR6XrNhs6'
+CTA_FORM = (FORM_J8_URL, '📝 Llenar predicciones — Playoffs J8')
 
 _CSS = """
   :root{--bg:#0b1020;--card:#141c2e;--bg2:#0f1523;--border:rgba(255,255,255,.08);
@@ -142,59 +165,68 @@ def _es_fila_resultado(nombre):
         ('respuesta', 'resultado', 'real'))
 
 
-def cargar_predicciones_playoff(sheet='Form Responses 1'):
-    """{nombre: {'marcadores': {num:(gl,gv,equipo_primer)}, 'rojas': int, 'penales': int}}."""
+def _abrir_hoja(jornada):
+    """Devuelve la hoja del Excel de la ronda, o None si no existe."""
+    if not os.path.exists(PLAYOFF_XLSX):
+        return None
     wb = openpyxl.load_workbook(PLAYOFF_XLSX, read_only=True, data_only=True)
-    ws = wb[sheet]
-    rows = list(ws.iter_rows(values_only=True))
+    nombre = SHEET[jornada]
+    # tolerante a mayúsculas ('j8' vs 'J8')
+    real = next((s for s in wb.sheetnames if s.lower() == nombre.lower()), None)
+    return wb[real] if real else None
+
+
+def cargar_predicciones_playoff(jornada=7):
+    """{nombre: {'marcadores': {num:(gl,gv,equipo_primer)}, 'rojas': int, 'penales': int}}."""
+    ws = _abrir_hoja(jornada)
     preds = {}
-    for r in rows[1:]:
-        nombre = r[1]
+    if ws is None:
+        return preds
+    matches = MATCHES[jornada]
+    for r in list(ws.iter_rows(values_only=True))[1:]:
+        nombre = r[1] if len(r) > 1 else None
         if not nombre or _es_fila_resultado(nombre):
             continue  # fila vacía o la de resultados reales
         marc = {}
-        for k, (num, _l, _v) in enumerate(MATCHES_J7):
+        for k, (num, _l, _v) in enumerate(matches):
             marc[num] = (_to_int(r[2 + 3 * k]), _to_int(r[3 + 3 * k]), r[4 + 3 * k])
         preds[nombre] = {
             'marcadores': marc,
-            'rojas': _to_int(r[2 + 3 * len(MATCHES_J7)]),
-            'penales': _to_int(r[3 + 3 * len(MATCHES_J7)]),
+            'rojas': _to_int(r[2 + 3 * len(matches)]),
+            'penales': _to_int(r[3 + 3 * len(matches)]),
         }
     return preds
 
 
-def _resultados_desde_excel(sheet='Form Responses 1'):
-    """Lee la fila de RESULTADOS reales del Excel de playoffs (la fila 'Respuesta').
-    Devuelve ({num: ResultadoPlayoff}, total_rojas, total_penales)."""
-    if not os.path.exists(PLAYOFF_XLSX):
-        return {}, None, None
-    wb = openpyxl.load_workbook(PLAYOFF_XLSX, read_only=True, data_only=True)
-    ws = wb[sheet]
+def _resultados_desde_excel(jornada=7):
+    """Lee la fila de RESULTADOS reales de la hoja de la ronda (fila 'Respuesta')."""
+    ws = _abrir_hoja(jornada)
     reales, rojas, penales = {}, None, None
+    if ws is None:
+        return reales, rojas, penales
+    matches = MATCHES[jornada]
     for r in ws.iter_rows(values_only=True):
         if len(r) < 2 or not _es_fila_resultado(r[1]):
             continue
-        for k, (num, local, visit) in enumerate(MATCHES_J7):
+        for k, (num, local, visit) in enumerate(matches):
             gl, gv, eq = _to_int(r[2 + 3 * k]), _to_int(r[3 + 3 * k]), r[4 + 3 * k]
             if gl is None or gv is None:
                 continue  # ese partido aún no tiene resultado
             pg = _primer_gol_lv(eq, local, visit) if (gl + gv) > 0 else None  # 0-0 → sin primer gol
             reales[num] = ResultadoPlayoff(num, gl, gv, pg)
-        rojas = _to_int(r[2 + 3 * len(MATCHES_J7)])
-        penales = _to_int(r[3 + 3 * len(MATCHES_J7)])
+        rojas = _to_int(r[2 + 3 * len(matches)])
+        penales = _to_int(r[3 + 3 * len(matches)])
     return reales, rojas, penales
 
 
 def cargar_resultados_playoff(jornada=7):
     """Devuelve ({num: ResultadoPlayoff}, total_rojas, total_penales).
 
-    Fuente principal: la fila 'Respuesta' del Excel de playoffs. Opcionalmente,
-    data/resultados_playoffs.json puede sobreescribir partidos puntuales.
-    Los bonos (rojas/penales) solo cuentan cuando la ronda ya tiene sus 8 partidos.
+    Fuente principal: la fila 'Respuesta' de la hoja de la ronda. Opcionalmente,
+    data/resultados_playoffs.json puede sobreescribir partidos/totales puntuales.
     """
-    reales, rojas, penales = _resultados_desde_excel()
+    reales, rojas, penales = _resultados_desde_excel(jornada)
 
-    # Override manual opcional (JSON): gana sobre el Excel si tiene entradas.
     if os.path.exists(RESULTADOS_JSON):
         with open(RESULTADOS_JSON, encoding='utf-8') as f:
             data = json.load(f)
@@ -209,29 +241,45 @@ def cargar_resultados_playoff(jornada=7):
         if j.get('total_penales') is not None:
             penales = j['total_penales']
 
-    # Los bonos cuentan con los totales que haya en el Excel (fila 'Respuesta').
-    # Si esas celdas están vacías (None), el bono queda pendiente; si tienen un
-    # número (incluido 0), ya se otorga a quien lo haya atinado.
     return reales, rojas, penales
 
 
-def cruces_j7():
-    """[(jugadorA, jugadorB, llave)] de los cuartos de la J7."""
+def _seeds():
     tabla = calcular_tabla_general(cargar_participantes(), cargar_historial_resultados())
-    seeds = playoffs.sembrar(tabla)
-    cruces = [(a, b, 'campeones') for _id, a, b in playoffs._campeones_cuartos(seeds)]
-    cruces += [(a, b, 'sotano') for _id, a, b in playoffs._sotano_cuartos(seeds)]
-    return cruces
+    return playoffs.sembrar(tabla)
 
 
-def puntos_ronda_j7():
-    """Devuelve {nombre: puntos de playoff en la J7} (partidos + bonos)."""
-    preds = cargar_predicciones_playoff()
-    reales, rj, rp = cargar_resultados_playoff(7)
+def cruces(jornada=7):
+    """[(jugadorA, jugadorB, llave)] de la ronda.
+
+    J7 = cuartos (siembra directa). J8 = semifinales, resueltas con los puntos
+    de la J7 (Campeones: avanza el ganador; Sótano: avanza el perdedor)."""
+    seeds = _seeds()
+    if jornada == 7:
+        cr = [(a, b, 'campeones') for _id, a, b in playoffs._campeones_cuartos(seeds)]
+        cr += [(a, b, 'sotano') for _id, a, b in playoffs._sotano_cuartos(seeds)]
+        return cr
+    if jornada == 8:
+        pts7, _ = puntos_ronda(7)
+        gan, perd = {}, {}
+        for cid, a, b in playoffs._campeones_cuartos(seeds) + playoffs._sotano_cuartos(seeds):
+            g, p = playoffs._h2h(a, b, pts7, seeds)
+            gan[cid], perd[cid] = g, p
+        cr = [(a, b, 'campeones') for _id, a, b in playoffs._campeones_semis(seeds, gan)]
+        cr += [(a, b, 'sotano') for _id, a, b in playoffs._sotano_semis(seeds, perd)]
+        return cr
+    return []
+
+
+def puntos_ronda(jornada=7):
+    """Devuelve ({nombre: puntos de playoff en la ronda}, n_partidos_con_resultado)."""
+    preds = cargar_predicciones_playoff(jornada)
+    reales, rj, rp = cargar_resultados_playoff(jornada)
+    matches = MATCHES[jornada]
     puntos = {}
     for n, d in preds.items():
         t = 0
-        for num, local, visit in MATCHES_J7:
+        for num, local, visit in matches:
             real = reales.get(num)
             gl, gv, eq = d['marcadores'].get(num, (None, None, None))
             if real is None or gl is None:
@@ -244,6 +292,11 @@ def puntos_ronda_j7():
             t += BONUS_PENALES
         puntos[n] = t
     return puntos, len(reales)
+
+
+def puntos_ronda_j7():
+    """Compat: puntos de la J7 (usado por la proyección de playoffs)."""
+    return puntos_ronda(7)
 
 
 def _avatar_data_url(nombre):
@@ -307,15 +360,17 @@ def _bono_pred(pred, clave, real_total, lado):
     return html, pts
 
 
-def _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real):
+def _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real, jornada=7):
+    matches = MATCHES[jornada]
+    ronda_nom = RONDA_NOMBRE[jornada]
     pa, pb = preds.get(a), preds.get(b)
-    llave_txt = ('🏆 Campeones · Cuartos' if llave == 'campeones'
-                 else '🚽 Sótano (Toilet Playoffs) · Cuartos')
+    llave_txt = (f'🏆 Campeones · {ronda_nom}' if llave == 'campeones'
+                 else f'🚽 Sótano (Toilet Playoffs) · {ronda_nom}')
     tot_a = tot_b = 0
     hay_pts = False
 
     filas = ''
-    for num, local, visit in MATCHES_J7:
+    for num, local, visit in matches:
         real = reales.get(num)
         ca, pa_pts = _celda_pred(pa, num, local, visit, real, 'a')
         cb, pb_pts = _celda_pred(pb, num, local, visit, real, 'b')
@@ -363,10 +418,10 @@ def _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real):
     html_doc = f"""<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{a} vs {b} — Playoffs J7</title><style>{_CSS}</style></head>
+<title>{a} vs {b} — Playoffs J{jornada}</title><style>{_CSS}</style></head>
 <body>
 <header class="hdr">
-  <div class="hdr-eyebrow">⚽ {RONDA_TITULO}</div>
+  <div class="hdr-eyebrow">⚽ {RONDA_TITULO[jornada]}</div>
   <div class="hdr-llave">{llave_txt}</div>
 </header>
 <div class="wrap">
@@ -407,6 +462,8 @@ _LANDING_CSS = """
   .hdr-sub{font-size:.82rem;opacity:.9;margin-top:3px;}
   .wrap{max-width:880px;margin:0 auto;padding:14px 14px 30px;}
   .back{display:inline-block;margin:4px 0 10px;color:var(--cyan);text-decoration:none;font-weight:700;font-size:.82rem;}
+  .navr{display:inline-block;margin:4px 8px 10px 0;color:var(--dorado);text-decoration:none;font-weight:800;font-size:.82rem;
+        border:1px solid rgba(255,215,0,.4);border-radius:999px;padding:4px 12px;}
   .cta{display:block;margin:2px 0 6px;text-align:center;text-decoration:none;font-weight:900;font-size:.98rem;
        color:#001018;background:linear-gradient(90deg,#00d4ff,#2ed573);padding:13px 12px;border-radius:12px;}
   .cta:hover{filter:brightness(1.06);}
@@ -438,8 +495,9 @@ _LANDING_CSS = """
 """
 
 
-def _landing_html(info):
-    """Página de acceso a los cruces (info = [(ruta, a, b, llave, faltan)])."""
+def _landing_html(info, jornada=7):
+    """Página de acceso a los cruces (info = [(ruta, a, b, llave, faltan, ta, tb)])."""
+    ronda_nom = RONDA_NOMBRE[jornada]
     grupos = {}
     for ruta, a, b, llave, faltan, ta, tb in info:
         grupos.setdefault(llave, []).append((os.path.basename(ruta), a, b, faltan, ta, tb))
@@ -461,42 +519,49 @@ def _landing_html(info):
         </a>"""
 
     secciones = ''
-    for llave, titulo in (('campeones', '🏆 Campeones · Cuartos'),
-                          ('sotano', '🚽 Sótano (Toilet Playoffs) · Cuartos')):
+    for llave, etq in (('campeones', f'🏆 Campeones · {ronda_nom}'),
+                       ('sotano', f'🚽 Sótano (Toilet Playoffs) · {ronda_nom}')):
         if not grupos.get(llave):
             continue
         cards = ''.join(_card(*c) for c in grupos[llave])
-        secciones += f'<div class="grupo-t">{titulo}</div><div class="grid">{cards}</div>'
+        secciones += f'<div class="grupo-t">{etq}</div><div class="grid">{cards}</div>'
+
+    # navegación entre rondas
+    nav = ''
+    for j in JORNADAS:
+        if j != jornada:
+            nav += f'<a class="navr" href="cruces_j{j}.html">Ver cruces J{j} →</a>'
+    form_url, form_lbl = CTA_FORM
 
     return f"""<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<title>Cruces Playoffs J7 — Quiniela Mundial 2026</title><style>{_LANDING_CSS}</style></head>
+<title>Cruces Playoffs J{jornada} — Quiniela Mundial 2026</title><style>{_LANDING_CSS}</style></head>
 <body>
 <header class="hdr">
-  <div class="hdr-title">⚔️ Cruces Playoffs · Jornada 7</div>
-  <div class="hdr-sub">Dieciseisavos — predicciones head-to-head de cada cruce</div>
+  <div class="hdr-title">⚔️ Cruces Playoffs · Jornada {jornada}</div>
+  <div class="hdr-sub">{ronda_nom} — predicciones head-to-head de cada cruce</div>
 </header>
 <div class="wrap">
   <a class="back" href="index.html">← Volver a la tabla</a>
-  <a class="cta" href="{FORM_J8_URL}" target="_blank">📝 Llenar predicciones — Playoffs J8 (dieciseisavos, 2ª tanda)</a>
+  {nav}
+  <a class="cta" href="{form_url}" target="_blank">{form_lbl}</a>
   {secciones}
 </div>
-<div class="foot">Quiniela Mundial 2026 — Playoffs J7</div>
+<div class="foot">Quiniela Mundial 2026 — Playoffs J{jornada}</div>
 </body></html>"""
 
 
-def _escribir_cruces(output_dir):
-    """Escribe un HTML por cruce en output_dir. Devuelve [(ruta, a, b, llave, faltan)]."""
-    preds = cargar_predicciones_playoff()
-    reales, rojas_real, penales_real = cargar_resultados_playoff(7)
-    cruces = cruces_j7()
+def _escribir_cruces(output_dir, jornada=7):
+    """Escribe un HTML por cruce en output_dir. [(ruta, a, b, llave, faltan, ta, tb)]."""
+    preds = cargar_predicciones_playoff(jornada)
+    reales, rojas_real, penales_real = cargar_resultados_playoff(jornada)
     os.makedirs(output_dir, exist_ok=True)
     info = []
-    for a, b, llave in cruces:
-        html, ta, tb = _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real)
-        fname = f'h2h_j7_{_slug(a)}_vs_{_slug(b)}.html'
+    for a, b, llave in cruces(jornada):
+        html, ta, tb = _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real, jornada)
+        fname = f'h2h_j{jornada}_{_slug(a)}_vs_{_slug(b)}.html'
         with open(os.path.join(output_dir, fname), 'w', encoding='utf-8') as f:
             f.write(html)
         faltan = [x for x in (a, b) if preds.get(x) is None]
@@ -504,17 +569,17 @@ def _escribir_cruces(output_dir):
     return info
 
 
-def generar(output_dir=OUTPUT_DIR):
-    """Genera los cruces (por defecto en reports/output). [(ruta,a,b,llave,completos)]."""
+def generar(output_dir=OUTPUT_DIR, jornada=7):
+    """Genera los cruces de la ronda. [(ruta,a,b,llave,completos)]."""
     return [(r, a, b, llave, not faltan)
-            for r, a, b, llave, faltan, ta, tb in _escribir_cruces(output_dir)]
+            for r, a, b, llave, faltan, ta, tb in _escribir_cruces(output_dir, jornada)]
 
 
-def generar_web():
-    """Genera los cruces en docs/ + la página de acceso docs/cruces_j7.html."""
-    info = _escribir_cruces(DOCS_DIR)
-    landing = _landing_html(info)
-    lpath = os.path.join(DOCS_DIR, 'cruces_j7.html')
+def generar_web(jornada=7):
+    """Genera los cruces de la ronda en docs/ + la página docs/cruces_j{n}.html."""
+    info = _escribir_cruces(DOCS_DIR, jornada)
+    landing = _landing_html(info, jornada)
+    lpath = os.path.join(DOCS_DIR, f'cruces_j{jornada}.html')
     with open(lpath, 'w', encoding='utf-8') as f:
         f.write(landing)
     return lpath, info
@@ -525,10 +590,13 @@ if __name__ == '__main__':
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     except AttributeError:
         pass
-    rutas = generar()
-    print(f'{len(rutas)} cruce(s) generados en {OUTPUT_DIR}:')
-    for ruta, a, b, llave, completos in rutas:
-        estado = 'completo' if completos else 'FALTA alguien'
-        print(f'   [{llave:9}] {a} vs {b:12} -> {os.path.basename(ruta)}  ({estado})')
-    if rutas:
-        webbrowser.open(f'file:///{rutas[0][0].replace(os.sep, "/")}')
+    primera = None
+    for j in JORNADAS:
+        rutas = generar(jornada=j)
+        print(f'J{j}: {len(rutas)} cruce(s) en {OUTPUT_DIR}')
+        for ruta, a, b, llave, completos in rutas:
+            estado = 'completo' if completos else 'FALTA alguien'
+            print(f'   [{llave:9}] {a} vs {b:12} -> {os.path.basename(ruta)}  ({estado})')
+            primera = primera or ruta
+    if primera:
+        webbrowser.open(f'file:///{primera.replace(os.sep, "/")}')

@@ -45,21 +45,22 @@ def main():
     except AttributeError:
         pass
 
-    from reports.h2h_playoff import generar, generar_web
+    from reports.h2h_playoff import generar, generar_web, JORNADAS
     from reports.generar_reporte import construir_index
 
-    rutas = generar()                 # PDFs en reports/output/
-    landing, _info = generar_web()    # versión web en docs/ + cruces_j7.html
-    construir_index()                 # index + playoffs.html (avanza el bracket con la J7)
-    print(f"== {len(rutas)} cruces H2H de la J7 regenerados ==")
-    completos = 0
-    for ruta, a, b, llave, ok in rutas:
-        completos += 1 if ok else 0
-        estado = '✅ completo' if ok else '⏳ falta alguien'
-        print(f"   [{llave:9}] {a} vs {b:12} -> {os.path.basename(ruta)}  {estado}")
-    print(f"\n{completos}/{len(rutas)} con ambos rivales.")
-    print(f"   PDFs:    reports/output/  (Ctrl+P → Guardar como PDF)")
-    print(f"   Web:     docs/  (landing: {os.path.basename(landing)})")
+    primera = None
+    for j in JORNADAS:
+        rutas = generar(jornada=j)             # PDFs en reports/output/
+        landing, _info = generar_web(jornada=j)  # versión web en docs/ + cruces_j{n}.html
+        completos = sum(1 for *_x, ok in rutas if ok)
+        print(f"== J{j}: {completos}/{len(rutas)} cruces con ambos rivales ==")
+        for ruta, a, b, llave, ok in rutas:
+            estado = '✅' if ok else '⏳ falta alguien'
+            print(f"   [{llave:9}] {a} vs {b:12} -> {os.path.basename(ruta)}  {estado}")
+        primera = primera or (rutas[0][0] if rutas else None)
+
+    construir_index()  # index + playoffs.html (avanza el bracket con la J7)
+    print("   PDFs: reports/output/  ·  Web: docs/ (cruces_j7.html, cruces_j8.html)")
 
     if '--publicar' in sys.argv:
         _publicar()
@@ -67,8 +68,8 @@ def main():
         print("   (para subir a la web: 'git push'  o  'py actualiza7.py --publicar')")
 
     abrir = '--no-open' not in sys.argv and '--publicar' not in sys.argv
-    if abrir and rutas:
-        webbrowser.open(f'file:///{rutas[0][0].replace(os.sep, "/")}')
+    if abrir and primera:
+        webbrowser.open(f'file:///{primera.replace(os.sep, "/")}')
 
 
 if __name__ == '__main__':
