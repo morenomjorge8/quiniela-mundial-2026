@@ -206,9 +206,9 @@ def cargar_resultados_playoff(jornada=7):
         if j.get('total_penales') is not None:
             penales = j['total_penales']
 
-    # Los bonos de la ronda solo se cierran cuando están los 8 partidos.
-    if len(reales) < len(MATCHES_J7):
-        rojas = penales = None
+    # Los bonos cuentan con los totales que haya en el Excel (fila 'Respuesta').
+    # Si esas celdas están vacías (None), el bono queda pendiente; si tienen un
+    # número (incluido 0), ya se otorga a quien lo haya atinado.
     return reales, rojas, penales
 
 
