@@ -35,41 +35,30 @@ const PARTICIPANTES = [
 
 // ── Rondas de playoffs ──────────────────────────────────────────────────
 // Una ronda = una jornada de playoff (todos los vivos predicen estos partidos).
-// Los #num siguen después del 72 (la fase de grupos fue #1–#72), así que en
-// numeración FIFA los dieciseisavos son #73–#88. La quiniela usa SOLO los
-// primeros 8 (#73–#80) para la primera ronda de playoffs (J7).
+// Los #num siguen después del 72 (la fase de grupos fue #1–#72). Los dieciseisavos
+// (Ronda de 32) son 16 partidos = #73–#88, repartidos en DOS rondas de la quiniela:
+//   J7 = primeros 8 (#73–#80)   ·   J8 = segundos 8 (#81–#88).
 //
-// J7 ya está lista con sus 8 partidos. Cuando termine la fase de grupos, solo
-// EDITA local/visitante de cada uno con los equipos reales (deja los num igual).
-// Las rondas siguientes (octavos, cuartos, …) se definen después: están abajo
-// comentadas como plantilla.
+// IMPORTANTE: crearTodo crea un form por CADA ronda que esté en RONDAS. La J7 YA
+// fue creada, así que abajo dejo activa SOLO la J8 (para no duplicar la J7). La
+// definición de la J7 queda como referencia comentada.
 const RONDAS = [
+  // J7 (primeros 8 dieciseisavos, #73–#80) — YA CREADA, no recrear:
+  //   #73 Sudáfrica-Canadá · #74 Brasil-Japón · #75 Alemania-Paraguay · #76 Países Bajos-Marruecos
+  //   #77 Costa de Marfil-Noruega · #78 Francia-Suecia · #79 México-Ecuador · #80 Inglaterra-RD Congo
   {
-    clave: 'J7', titulo: 'Playoffs J7 — Dieciseisavos (primeros 8)', fechas: '28 jun – 1 jul',
+    clave: 'J8', titulo: 'Playoffs J8 — Dieciseisavos (segundos 8)', fechas: '29 jun – 3 jul',
     partidos: [
-      { num: 73, local: 'Sudáfrica',       visitante: 'Canadá',    fecha: 'Dom 28 jun · 1:00 PM' },
-      { num: 74, local: 'Brasil',          visitante: 'Japón',     fecha: 'Lun 29 jun · 11:00 AM' },
-      { num: 75, local: 'Alemania',        visitante: 'Paraguay',  fecha: 'Lun 29 jun · 2:30 PM' },
-      { num: 76, local: 'Países Bajos',    visitante: 'Marruecos', fecha: 'Lun 29 jun · 7:00 PM' },
-      { num: 77, local: 'Costa de Marfil', visitante: 'Noruega',   fecha: 'Mar 30 jun · 11:00 AM' },
-      { num: 78, local: 'Francia',         visitante: 'Suecia',    fecha: 'Mar 30 jun · 3:00 PM' },
-      { num: 79, local: 'México',          visitante: 'Ecuador',   fecha: 'Mar 30 jun · 7:00 PM' },
-      { num: 80, local: 'Inglaterra',      visitante: 'RD Congo',  fecha: 'Mié 1 jul · 10:00 AM' },
+      { num: 81, local: 'Bélgica',        visitante: 'Senegal',              fecha: 'Lun 29 jun · 2:00 PM' },
+      { num: 82, local: 'Estados Unidos', visitante: 'Bosnia y Herzegovina', fecha: 'Lun 29 jun · 6:00 PM' },
+      { num: 83, local: 'España',         visitante: 'Austria',              fecha: 'Jue 2 jul · 1:00 PM' },
+      { num: 84, local: 'Portugal',       visitante: 'Croacia',              fecha: 'Jue 2 jul · 5:00 PM' },
+      { num: 85, local: 'Suiza',          visitante: 'Argelia',              fecha: 'Jue 2 jul · 9:00 PM' },
+      { num: 86, local: 'Australia',      visitante: 'Egipto',               fecha: 'Vie 3 jul · 12:00 PM' },
+      { num: 87, local: 'Argentina',      visitante: 'Cabo Verde',           fecha: 'Vie 3 jul · 4:00 PM' },
+      { num: 88, local: 'Colombia',       visitante: 'Ghana',                fecha: 'Vie 3 jul · 7:30 PM' },
     ],
   },
-
-  // ── Rondas siguientes (por definir según avance el bracket) ──────────────
-  // Descomenta y edita cuando se conozcan los cruces:
-  //
-  // { clave: 'J8', titulo: 'Playoffs J8 — Octavos', fechas: 'por definir',
-  //   partidos: [
-  //     { num: 89, local: 'Equipo A', visitante: 'Equipo B' },
-  //     // … octavos
-  //   ],
-  // },
-  // { clave: 'J9', titulo: 'Playoffs J9 — Cuartos', fechas: 'por definir',
-  //   partidos: [ { num: 97, local: 'Equipo A', visitante: 'Equipo B' } ],
-  // },
 ];
 
 // ================================================================
