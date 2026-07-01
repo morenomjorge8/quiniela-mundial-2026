@@ -182,11 +182,13 @@ def cargar_predicciones_playoff(jornada=7):
     preds = {}
     if ws is None:
         return preds
+    from data.respuestas_loader import normalizar_nombre
     matches = MATCHES[jornada]
     for r in list(ws.iter_rows(values_only=True))[1:]:
         nombre = r[1] if len(r) > 1 else None
         if not nombre or _es_fila_resultado(nombre):
             continue  # fila vacía o la de resultados reales
+        nombre = normalizar_nombre(nombre)  # 'Lu'→'Lucía', 'lucia'→'Lucía', etc.
         marc = {}
         for k, (num, _l, _v) in enumerate(matches):
             marc[num] = (_to_int(r[2 + 3 * k]), _to_int(r[3 + 3 * k]), r[4 + 3 * k])

@@ -32,6 +32,7 @@ ALIAS = {
     'sofía orozco': 'Sof Orozco',
     'lucia': 'Lucía',
     'lucía': 'Lucía',
+    'lu': 'Lucía',
     'sof': 'Sof',
     'dani': 'Dani',
     'row': 'Row',
