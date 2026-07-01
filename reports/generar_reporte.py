@@ -509,6 +509,13 @@ _CSS_SITIO = """
   .po-slot.po-tbd { padding-left: 6px; }
   .po-slot.po-tbd .po-name { color: var(--txt2); font-weight: 600; font-style: italic; font-size: 0.76rem; }
   .po-prize { color: var(--dorado); font-weight: 800; }
+  .po-pts { margin-left: auto; font-size: 0.72rem; font-weight: 800; color: var(--cyan); white-space: nowrap; }
+  .po-slot.po-adv { background: rgba(46,213,115,0.10); border-radius: 8px; }
+  .po-slot.po-adv .po-name { color: var(--verde); }
+  .po-slot.po-adv .po-pts { color: var(--verde); }
+  .po-adv-badge { font-size: 0.54rem; font-weight: 800; letter-spacing: 0.3px; color: var(--verde);
+    background: rgba(46,213,115,0.16); border: 1px solid rgba(46,213,115,0.4);
+    border-radius: 20px; padding: 1px 6px; white-space: nowrap; }
   /* Marca de "ya envió el form" */
   .part-card.entregado {
     border-color: rgba(46,213,115,0.55);
@@ -1120,26 +1127,40 @@ def generar(
     return ruta
 
 
-def _po_slot(slot, seeds, imagenes):
-    """Un casillero del bracket: participante sembrado (con seed+avatar) o placeholder."""
+def _po_slot(slot, seeds, imagenes, pts=None, avanzan=None):
+    """Un casillero del bracket: participante sembrado (con seed+avatar) o placeholder.
+
+    Si `pts` trae su puntaje de la ronda, lo muestra; si está en `avanzan`, lo
+    resalta con la marca de que pasa a la siguiente ronda.
+    """
     if slot in seeds:
         seed = seeds.index(slot) + 1
         av = _get_avatar(slot, imagenes, 'avatar')
-        return f'<div class="po-slot"><span class="po-seed">{seed}°</span>{av}<span class="po-name">{slot}</span></div>'
+        p = pts.get(slot) if pts else None
+        pts_html = f'<span class="po-pts">{p} pts</span>' if p is not None else ''
+        adv = avanzan is not None and slot in avanzan
+        cls = ' po-adv' if adv else ''
+        badge = '<span class="po-adv-badge">▲ avanza</span>' if adv else ''
+        return (f'<div class="po-slot{cls}"><span class="po-seed">{seed}°</span>{av}'
+                f'<span class="po-name">{slot}</span>{pts_html}{badge}</div>')
     return f'<div class="po-slot po-tbd"><span class="po-name">{slot}</span></div>'
 
 
-def _po_ronda(nombre, cruces, seeds, imagenes):
+def _po_ronda(nombre, cruces, seeds, imagenes, pts=None, avanzan=None):
     cards = ''
     for a, b in cruces:
-        cards += (f'<div class="po-cruce">{_po_slot(a, seeds, imagenes)}'
-                  f'{_po_slot(b, seeds, imagenes)}</div>')
+        cards += (f'<div class="po-cruce">{_po_slot(a, seeds, imagenes, pts, avanzan)}'
+                  f'{_po_slot(b, seeds, imagenes, pts, avanzan)}</div>')
     return (f'<div class="po-ronda"><div class="po-ronda-h">{nombre}</div>'
             f'<div class="po-ronda-body">{cards}</div></div>')
 
 
-def _po_bracket(titulo, sub, rondas, seeds, imagenes, extra=''):
-    cols = ''.join(_po_ronda(n, c, seeds, imagenes) for n, c in rondas)
+def _po_bracket(titulo, sub, rondas, seeds, imagenes, extra='', pts=None, avanzan=None):
+    # Los puntos/avance solo aplican a la ronda de Cuartos (la ya jugada en J7).
+    cols = ''.join(
+        _po_ronda(n, c, seeds, imagenes, pts, avanzan) if n == 'Cuartos'
+        else _po_ronda(n, c, seeds, imagenes)
+        for n, c in rondas)
     return f"""
 <div class="card">
   <div class="card-title">{titulo}</div>
@@ -1179,7 +1200,7 @@ def _section_reglas_playoff():
 </div>"""
 
 
-def _build_playoffs_html(seeds, disp, imagenes):
+def _build_playoffs_html(seeds, disp, imagenes, pts=None, avanzan=None):
     head = _site_header('Playoffs · proyección', imagenes, seeds)
     reglas = _section_reglas_playoff()
     a3, b3 = disp['campeones_3er']
@@ -1187,16 +1208,22 @@ def _build_playoffs_html(seeds, disp, imagenes):
     campeones = _po_bracket(
         '🏆 Llave de Campeones (1°–6°)',
         'Por los premios. Bye para 1° y 2°. <span class="po-prize">1° $115 · 2° $60 · 3° $20</span>',
-        disp['campeones'], seeds, imagenes, extra=tercer,
+        disp['campeones'], seeds, imagenes, extra=tercer, pts=pts, avanzan=avanzan,
     )
     sotano = _po_bracket(
         '💩 Toilet Playoffs (7°–13°)',
         '¿Quién es el peor de la quiniela? Bye para el 13°. El que pierde la '
         '<b>Poop Final</b> es <b>el peor</b> 😈',
-        disp['sotano'], seeds, imagenes,
+        disp['sotano'], seeds, imagenes, pts=pts, avanzan=avanzan,
     )
-    nota = ('<div class="card"><p class="po-sub">⚠️ Es una <b>proyección con la tabla de '
-            'ahorita</b>. La siembra real se fija al terminar la Jornada 6.</p></div>')
+    if avanzan:
+        nota = ('<div class="card"><p class="po-sub">✅ Siembra con la <b>tabla final</b> de '
+                'la temporada regular. Los <b>Cuartos ya se jugaron (J7)</b>: se muestran los '
+                'puntos y <b>▲ quién avanzó</b> a semifinales. En el Sótano avanza el que '
+                '<b>pierde</b> (cae hacia "el peor"). Las semis se definen en la J8.</p></div>')
+    else:
+        nota = ('<div class="card"><p class="po-sub">⚠️ Es una <b>proyección con la tabla de '
+                'ahorita</b>. La siembra real se fija al terminar la Jornada 6.</p></div>')
     return f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1221,18 +1248,47 @@ def _build_playoffs_html(seeds, disp, imagenes):
 
 
 def construir_playoffs() -> str | None:
-    """Genera docs/playoffs.html con las dos llaves sembradas con la tabla actual."""
+    """Genera docs/playoffs.html. Si la J7 ya terminó, avanza el bracket con sus
+    resultados (marca quién pasó a semis y muestra puntos); si no, es proyección."""
     from data.loader import cargar_participantes
     from data.historial_io import cargar_historial_resultados
     from quiniela.standings import calcular_tabla_general
-    from quiniela.playoffs import sembrar, bracket_display
+    from quiniela import playoffs
 
     tabla = calcular_tabla_general(cargar_participantes(), cargar_historial_resultados())
-    seeds = sembrar(tabla)
+    seeds = playoffs.sembrar(tabla)
     if len(seeds) < 13:
         return None
 
-    html = _build_playoffs_html(seeds, bracket_display(seeds), _cargar_imagenes())
+    pts7, avanzan, disp = None, None, playoffs.bracket_display(seeds)
+    try:
+        from reports.h2h_playoff import puntos_ronda_j7, MATCHES_J7
+        pts, n_res = puntos_ronda_j7()
+        if n_res >= len(MATCHES_J7):  # J7 completa → bracket en vivo
+            gan, perd = {}, {}
+            for cid, a, b in playoffs._campeones_cuartos(seeds) + playoffs._sotano_cuartos(seeds):
+                g, p = playoffs._h2h(a, b, pts, seeds)
+                gan[cid], perd[cid] = g, p
+            s = seeds
+            disp = {
+                'campeones': [
+                    ('Cuartos', [(s[2], s[5]), (s[3], s[4])]),
+                    ('Semifinales', [(a, b) for _c, a, b in playoffs._campeones_semis(seeds, gan)]),
+                    ('Final', [('Ganador Semifinal A', 'Ganador Semifinal B')]),
+                ],
+                'campeones_3er': ('Perdedor Semifinal A', 'Perdedor Semifinal B'),
+                'sotano': [
+                    ('Cuartos', [(s[6], s[11]), (s[7], s[10]), (s[8], s[9])]),
+                    ('Semifinales', [(a, b) for _c, a, b in playoffs._sotano_semis(seeds, perd)]),
+                    ('Poop Final', [('Perdedor Semifinal A', 'Perdedor Semifinal B')]),
+                ],
+            }
+            pts7 = pts
+            avanzan = {gan['C-CF1'], gan['C-CF2'], perd['S-CF1'], perd['S-CF2'], perd['S-CF3']}
+    except Exception as e:  # si algo falla, cae a la proyección estática
+        print(f'  (playoffs: uso proyección estática; {e})')
+
+    html = _build_playoffs_html(seeds, disp, _cargar_imagenes(), pts=pts7, avanzan=avanzan)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     ruta = os.path.join(OUTPUT_DIR, 'playoffs.html')
     with open(ruta, 'w', encoding='utf-8') as f:

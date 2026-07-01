@@ -46,9 +46,11 @@ def main():
         pass
 
     from reports.h2h_playoff import generar, generar_web
+    from reports.generar_reporte import construir_index
 
     rutas = generar()                 # PDFs en reports/output/
     landing, _info = generar_web()    # versión web en docs/ + cruces_j7.html
+    construir_index()                 # index + playoffs.html (avanza el bracket con la J7)
     print(f"== {len(rutas)} cruces H2H de la J7 regenerados ==")
     completos = 0
     for ruta, a, b, llave, ok in rutas:

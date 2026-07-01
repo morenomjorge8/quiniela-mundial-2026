@@ -224,6 +224,28 @@ def cruces_j7():
     return cruces
 
 
+def puntos_ronda_j7():
+    """Devuelve {nombre: puntos de playoff en la J7} (partidos + bonos)."""
+    preds = cargar_predicciones_playoff()
+    reales, rj, rp = cargar_resultados_playoff(7)
+    puntos = {}
+    for n, d in preds.items():
+        t = 0
+        for num, local, visit in MATCHES_J7:
+            real = reales.get(num)
+            gl, gv, eq = d['marcadores'].get(num, (None, None, None))
+            if real is None or gl is None:
+                continue
+            t += puntos_partido(
+                PrediccionPlayoff('', num, gl, gv, _primer_gol_lv(eq, local, visit)), real)
+        if rj is not None and d['rojas'] == rj:
+            t += BONUS_ROJAS
+        if rp is not None and d['penales'] == rp:
+            t += BONUS_PENALES
+        puntos[n] = t
+    return puntos, len(reales)
+
+
 def _avatar_data_url(nombre):
     fname = _CARICATURA_FILE.get(nombre)
     if not fname:
