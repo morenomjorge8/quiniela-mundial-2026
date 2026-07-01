@@ -53,6 +53,9 @@ MATCHES_J7 = [
 
 RONDA_TITULO = 'Playoffs J7 · Dieciseisavos (primeros 8)'
 
+# Form de predicciones de la ronda siguiente (J8).
+FORM_J8_URL = 'https://forms.gle/S7jBrrYNqR6XrNhs6'
+
 _CSS = """
   :root{--bg:#0b1020;--card:#141c2e;--bg2:#0f1523;--border:rgba(255,255,255,.08);
     --cyan:#00d4ff;--verde:#2ed573;--rojo:#ff4757;--dorado:#ffd700;--txt:#e6ecf7;
@@ -382,6 +385,9 @@ _LANDING_CSS = """
   .hdr-sub{font-size:.82rem;opacity:.9;margin-top:3px;}
   .wrap{max-width:880px;margin:0 auto;padding:14px 14px 30px;}
   .back{display:inline-block;margin:4px 0 10px;color:var(--cyan);text-decoration:none;font-weight:700;font-size:.82rem;}
+  .cta{display:block;margin:2px 0 6px;text-align:center;text-decoration:none;font-weight:900;font-size:.98rem;
+       color:#001018;background:linear-gradient(90deg,#00d4ff,#2ed573);padding:13px 12px;border-radius:12px;}
+  .cta:hover{filter:brightness(1.06);}
   .grupo-t{font-size:.78rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--txt2);margin:16px 2px 9px;}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
   .lc{display:block;background:var(--card);border:1px solid var(--border);border-radius:14px;
@@ -452,6 +458,7 @@ def _landing_html(info):
 </header>
 <div class="wrap">
   <a class="back" href="index.html">← Volver a la tabla</a>
+  <a class="cta" href="{FORM_J8_URL}" target="_blank">📝 Llenar predicciones — Playoffs J8 (dieciseisavos, 2ª tanda)</a>
   {secciones}
 </div>
 <div class="foot">Quiniela Mundial 2026 — Playoffs J7</div>
