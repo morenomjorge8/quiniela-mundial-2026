@@ -45,8 +45,11 @@ def main():
     except AttributeError:
         pass
 
-    from reports.h2h_playoff import generar, generar_web, JORNADAS
+    from reports.h2h_playoff import generar, generar_web, JORNADAS, sincronizar_resultados_json
     from reports.generar_reporte import construir_index
+
+    sincronizar_resultados_json()  # vuelca resultados del Excel → data/resultados_playoffs.json
+    print("== resultados del Excel volcados a data/resultados_playoffs.json ==")
 
     primera = None
     for j in JORNADAS:

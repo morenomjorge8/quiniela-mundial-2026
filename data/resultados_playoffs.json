@@ -1,8 +1,75 @@
 {
-  "_comment": "OVERRIDE OPCIONAL. Los resultados de playoffs se capturan en el EXCEL, en una fila llamada 'Respuesta' (columna 'Tu nombre' = 'Respuesta'), igual que la temporada regular. Este JSON solo sirve para forzar/corregir un partido puntual si hiciera falta: 'marcadores' = { '<num>': [goles_local, goles_visitante, 'L'/'V'/null] }. Normalmente déjalo vacío.",
+  "_comment": "Snapshot AUTO de los resultados del Excel de playoffs (fila 'Respuesta' de cada hoja). Se regenera en cada 'py actualiza7.py' desde el Excel; sirve de respaldo versionado. Editarlo a mano no sirve: el próximo run lo pisa con lo que diga el Excel.",
   "7": {
-    "marcadores": {},
-    "total_rojas": null,
-    "total_penales": null
+    "marcadores": {
+      "73": [
+        0,
+        1,
+        "V"
+      ],
+      "74": [
+        2,
+        1,
+        "V"
+      ],
+      "75": [
+        1,
+        1,
+        "V"
+      ],
+      "76": [
+        1,
+        1,
+        "L"
+      ],
+      "77": [
+        1,
+        2,
+        "V"
+      ],
+      "78": [
+        3,
+        0,
+        "L"
+      ],
+      "79": [
+        2,
+        0,
+        "L"
+      ],
+      "80": [
+        2,
+        1,
+        "V"
+      ]
+    },
+    "total_rojas": 1,
+    "total_penales": 0
+  },
+  "8": {
+    "marcadores": {
+      "81": [
+        2,
+        2,
+        "V"
+      ],
+      "82": [
+        2,
+        0,
+        "L"
+      ],
+      "83": [
+        3,
+        0,
+        "L"
+      ],
+      "84": [
+        2,
+        1,
+        "V"
+      ]
+    },
+    "total_rojas": 1,
+    "total_penales": 0
   }
 }

@@ -246,6 +246,36 @@ def cargar_resultados_playoff(jornada=7):
     return reales, rojas, penales
 
 
+def sincronizar_resultados_json():
+    """Vuelca a data/resultados_playoffs.json los resultados que HOY tiene el Excel
+    (fila 'Respuesta' de cada ronda). Se corre en cada `actualiza7` para dejar un
+    respaldo versionado en git: cualquier cambio de resultado sale en el diff."""
+    data = {}
+    if os.path.exists(RESULTADOS_JSON):
+        try:
+            with open(RESULTADOS_JSON, encoding='utf-8') as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            data = {}
+    data['_comment'] = ('Snapshot AUTO de los resultados del Excel de playoffs (fila '
+                        "'Respuesta' de cada hoja). Se regenera en cada 'py actualiza7.py' "
+                        'desde el Excel; sirve de respaldo versionado. Editarlo a mano no '
+                        'sirve: el próximo run lo pisa con lo que diga el Excel.')
+    for j in JORNADAS:
+        if _abrir_hoja(j) is None:
+            continue  # sin hoja para esa ronda → no tocar lo que ya haya
+        reales, rojas, penales = _resultados_desde_excel(j)
+        data[str(j)] = {
+            'marcadores': {str(n): [r.goles_local, r.goles_visitante, r.primer_gol]
+                           for n, r in sorted(reales.items())},
+            'total_rojas': rojas,
+            'total_penales': penales,
+        }
+    with open(RESULTADOS_JSON, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    return data
+
+
 def _seeds():
     tabla = calcular_tabla_general(cargar_participantes(), cargar_historial_resultados())
     return playoffs.sembrar(tabla)
