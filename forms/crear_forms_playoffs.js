@@ -35,28 +35,25 @@ const PARTICIPANTES = [
 
 // ── Rondas de playoffs ──────────────────────────────────────────────────
 // Una ronda = una jornada de playoff (todos los vivos predicen estos partidos).
-// Los #num siguen después del 72 (la fase de grupos fue #1–#72). Los dieciseisavos
-// (Ronda de 32) son 16 partidos = #73–#88, repartidos en DOS rondas de la quiniela:
-//   J7 = primeros 8 (#73–#80)   ·   J8 = segundos 8 (#81–#88).
+// Numeración FIFA continuando tras #72 (fase de grupos):
+//   J7 = primeros 8 dieciseisavos (#73–#80)   ·   J8 = segundos 8 dieciseisavos (#81–#88)
+//   J9 = octavos / Round of 16 (#89–#96) → ronda FINAL del bracket.
 //
-// IMPORTANTE: crearTodo crea un form por CADA ronda que esté en RONDAS. La J7 YA
-// fue creada, así que abajo dejo activa SOLO la J8 (para no duplicar la J7). La
-// definición de la J7 queda como referencia comentada.
+// IMPORTANTE: crearTodo crea un form por CADA ronda que esté en RONDAS. J7 y J8 YA
+// fueron creadas, así que abajo dejo activa SOLO la J9 (para no duplicarlas).
 const RONDAS = [
-  // J7 (primeros 8 dieciseisavos, #73–#80) — YA CREADA, no recrear:
-  //   #73 Sudáfrica-Canadá · #74 Brasil-Japón · #75 Alemania-Paraguay · #76 Países Bajos-Marruecos
-  //   #77 Costa de Marfil-Noruega · #78 Francia-Suecia · #79 México-Ecuador · #80 Inglaterra-RD Congo
+  // J7 (dieciseisavos #73–#80) y J8 (dieciseisavos #81–#88) — YA CREADAS, no recrear.
   {
-    clave: 'J8', titulo: 'Playoffs J8 — Dieciseisavos (segundos 8)', fechas: '29 jun – 3 jul',
+    clave: 'J9', titulo: 'Playoffs J9 — Octavos (FINAL del bracket)', fechas: '4 – 7 jul',
     partidos: [
-      { num: 81, local: 'Bélgica',        visitante: 'Senegal',              fecha: 'Lun 29 jun · 2:00 PM' },
-      { num: 82, local: 'Estados Unidos', visitante: 'Bosnia y Herzegovina', fecha: 'Lun 29 jun · 6:00 PM' },
-      { num: 83, local: 'España',         visitante: 'Austria',              fecha: 'Jue 2 jul · 1:00 PM' },
-      { num: 84, local: 'Portugal',       visitante: 'Croacia',              fecha: 'Jue 2 jul · 5:00 PM' },
-      { num: 85, local: 'Suiza',          visitante: 'Argelia',              fecha: 'Jue 2 jul · 9:00 PM' },
-      { num: 86, local: 'Australia',      visitante: 'Egipto',               fecha: 'Vie 3 jul · 12:00 PM' },
-      { num: 87, local: 'Argentina',      visitante: 'Cabo Verde',           fecha: 'Vie 3 jul · 4:00 PM' },
-      { num: 88, local: 'Colombia',       visitante: 'Ghana',                fecha: 'Vie 3 jul · 7:30 PM' },
+      { num: 89, local: 'Canadá',    visitante: 'Marruecos',      fecha: 'Sáb 4 jul · 11:00 AM' },
+      { num: 90, local: 'Paraguay',  visitante: 'Francia',        fecha: 'Sáb 4 jul · 3:00 PM' },
+      { num: 91, local: 'Brasil',    visitante: 'Noruega',        fecha: 'Dom 5 jul · 2:00 PM' },
+      { num: 92, local: 'México',    visitante: 'Inglaterra',     fecha: 'Dom 5 jul · 6:00 PM' },
+      { num: 93, local: 'Portugal',  visitante: 'España',         fecha: 'Lun 6 jul · 1:00 PM' },
+      { num: 94, local: 'Estados Unidos', visitante: 'Bélgica',   fecha: 'Lun 6 jul · 6:00 PM' },
+      { num: 95, local: 'Argentina', visitante: 'Egipto',         fecha: 'Mar 7 jul · 10:00 AM' },
+      { num: 96, local: 'Suiza',     visitante: 'Colombia/Ghana', fecha: 'Mar 7 jul · 2:00 PM' },
     ],
   },
 ];
