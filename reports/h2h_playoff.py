@@ -65,19 +65,47 @@ MATCHES_J8 = [
     (88, 'Colombia', 'Ghana'),
 ]
 
-JORNADAS = (7, 8)
-MATCHES = {7: MATCHES_J7, 8: MATCHES_J8}
+MATCHES_J9 = [
+    (89, 'Canadá', 'Marruecos'),
+    (90, 'Paraguay', 'Francia'),
+    (91, 'Brasil', 'Noruega'),
+    (92, 'México', 'Inglaterra'),
+    (93, 'Portugal', 'España'),
+    (94, 'Estados Unidos', 'Bélgica'),
+    (95, 'Argentina', 'Egipto'),
+    (96, 'Suiza', 'Colombia/Ghana'),
+]
+
+JORNADAS = (7, 8, 9)
+MATCHES = {7: MATCHES_J7, 8: MATCHES_J8, 9: MATCHES_J9}
 # Hoja del Excel donde llegan las respuestas de cada ronda.
-SHEET = {7: 'Form Responses 1', 8: 'j8'}
+SHEET = {7: 'Form Responses 1', 8: 'j8', 9: 'j9'}
 RONDA_TITULO = {
     7: 'Playoffs J7 · Dieciseisavos (primeros 8)',
     8: 'Playoffs J8 · Dieciseisavos (2ª tanda)',
+    9: 'Playoffs J9 · Octavos (Final del bracket)',
 }
-RONDA_NOMBRE = {7: 'Cuartos', 8: 'Semifinales'}
+RONDA_NOMBRE = {7: 'Cuartos', 8: 'Semifinales', 9: 'Final'}
+
+# Etiquetas específicas de los cruces de la FINAL (J9). llave -> (grupo, título).
+_LLAVE_FINAL = {
+    'campeones-final': ('campeones', '🏆 GRAN FINAL · 1° vs 2°'),
+    'campeones-3er':   ('campeones', '🥉 3er lugar · 3° vs 4°'),
+    'sotano-final':    ('sotano', '🚽 POOP FINAL · el que pierde es EL PEOR 😈'),
+}
 
 # Form de predicciones de la ronda en curso (botón en la landing).
-FORM_J8_URL = 'https://forms.gle/S7jBrrYNqR6XrNhs6'
-CTA_FORM = (FORM_J8_URL, '📝 Llenar predicciones — Playoffs J8')
+FORM_J9_URL = 'https://forms.gle/HYcbLVw4oDc1EcDL9'
+CTA_FORM = (FORM_J9_URL, '📝 Llenar predicciones — Playoffs J9 (Final)')
+
+
+def _llave_info(llave, jornada):
+    """Devuelve (grupo, título del cruce) para render/agrupación."""
+    if llave in _LLAVE_FINAL:
+        return _LLAVE_FINAL[llave]
+    if llave == 'campeones':
+        return 'campeones', f'🏆 Campeones · {RONDA_NOMBRE[jornada]}'
+    return 'sotano', f'🚽 Sótano (Toilet Playoffs) · {RONDA_NOMBRE[jornada]}'
 
 _CSS = """
   :root{--bg:#0b1020;--card:#141c2e;--bg2:#0f1523;--border:rgba(255,255,255,.08);
@@ -291,14 +319,28 @@ def cruces(jornada=7):
         cr = [(a, b, 'campeones') for _id, a, b in playoffs._campeones_cuartos(seeds)]
         cr += [(a, b, 'sotano') for _id, a, b in playoffs._sotano_cuartos(seeds)]
         return cr
-    if jornada == 8:
+    if jornada in (8, 9):
         pts7, _ = puntos_ronda(7)
-        gan, perd = {}, {}
+        ganc, perdc = {}, {}
         for cid, a, b in playoffs._campeones_cuartos(seeds) + playoffs._sotano_cuartos(seeds):
             g, p = playoffs._h2h(a, b, pts7, seeds)
-            gan[cid], perd[cid] = g, p
-        cr = [(a, b, 'campeones') for _id, a, b in playoffs._campeones_semis(seeds, gan)]
-        cr += [(a, b, 'sotano') for _id, a, b in playoffs._sotano_semis(seeds, perd)]
+            ganc[cid], perdc[cid] = g, p
+        semis = playoffs._campeones_semis(seeds, ganc) + playoffs._sotano_semis(seeds, perdc)
+        if jornada == 8:
+            cr = [(a, b, 'campeones') for cid, a, b in semis if cid.startswith('C')]
+            cr += [(a, b, 'sotano') for cid, a, b in semis if cid.startswith('S')]
+            return cr
+        # jornada 9: resolver semis (con puntos J8) y armar las finales
+        pts8, _ = puntos_ronda(8)
+        gans, perds = {}, {}
+        for cid, a, b in semis:
+            g, p = playoffs._h2h(a, b, pts8, seeds)
+            gans[cid], perds[cid] = g, p
+        cr = []
+        for cid, a, b in playoffs._campeones_final(gans, perds):
+            cr.append((a, b, 'campeones-final' if cid == 'C-FINAL' else 'campeones-3er'))
+        for cid, a, b in playoffs._sotano_final(perds):
+            cr.append((a, b, 'sotano-final'))
         return cr
     return []
 
@@ -394,10 +436,8 @@ def _bono_pred(pred, clave, real_total, lado):
 
 def _seccion_cruce(a, b, llave, preds, reales, rojas_real, penales_real, jornada=7):
     matches = MATCHES[jornada]
-    ronda_nom = RONDA_NOMBRE[jornada]
     pa, pb = preds.get(a), preds.get(b)
-    llave_txt = (f'🏆 Campeones · {ronda_nom}' if llave == 'campeones'
-                 else f'🚽 Sótano (Toilet Playoffs) · {ronda_nom}')
+    _grupo, llave_txt = _llave_info(llave, jornada)
     tot_a = tot_b = 0
     hay_pts = False
 
@@ -530,9 +570,11 @@ _LANDING_CSS = """
 def _landing_html(info, jornada=7):
     """Página de acceso a los cruces (info = [(ruta, a, b, llave, faltan, ta, tb)])."""
     ronda_nom = RONDA_NOMBRE[jornada]
+    # Agrupa por la etiqueta específica del cruce (en J9: Gran Final / 3er / Poop Final).
     grupos = {}
     for ruta, a, b, llave, faltan, ta, tb in info:
-        grupos.setdefault(llave, []).append((os.path.basename(ruta), a, b, faltan, ta, tb))
+        _grupo, etq = _llave_info(llave, jornada)
+        grupos.setdefault(etq, []).append((os.path.basename(ruta), a, b, faltan, ta, tb))
 
     def _card(fname, a, b, faltan, ta, tb):
         pend = f'<div class="lc-pend">⏳ Falta: {", ".join(faltan)}</div>' if faltan else ''
@@ -551,11 +593,8 @@ def _landing_html(info, jornada=7):
         </a>"""
 
     secciones = ''
-    for llave, etq in (('campeones', f'🏆 Campeones · {ronda_nom}'),
-                       ('sotano', f'🚽 Sótano (Toilet Playoffs) · {ronda_nom}')):
-        if not grupos.get(llave):
-            continue
-        cards = ''.join(_card(*c) for c in grupos[llave])
+    for etq, cards_data in grupos.items():
+        cards = ''.join(_card(*c) for c in cards_data)
         secciones += f'<div class="grupo-t">{etq}</div><div class="grid">{cards}</div>'
 
     # navegación entre rondas
