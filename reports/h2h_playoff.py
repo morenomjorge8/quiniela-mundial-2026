@@ -252,8 +252,10 @@ def _resultados_desde_excel(jornada=7):
 def cargar_resultados_playoff(jornada=7):
     """Devuelve ({num: ResultadoPlayoff}, total_rojas, total_penales).
 
-    Fuente principal: la fila 'Respuesta' de la hoja de la ronda. Opcionalmente,
-    data/resultados_playoffs.json puede sobreescribir partidos/totales puntuales.
+    El EXCEL (fila 'Respuesta' de la hoja de la ronda) MANDA. El JSON
+    (data/resultados_playoffs.json) solo RELLENA lo que el Excel no tenga —
+    nunca pisa un valor del Excel. Así un JSON viejo no puede sobreescribir un
+    resultado correcto del Excel.
     """
     reales, rojas, penales = _resultados_desde_excel(jornada)
 
@@ -262,13 +264,13 @@ def cargar_resultados_playoff(jornada=7):
             data = json.load(f)
         j = data.get(str(jornada), {}) or {}
         for num, v in (j.get('marcadores') or {}).items():
-            if not v:
-                continue
+            if not v or int(num) in reales:
+                continue  # el Excel ya lo tiene → no lo pisa el JSON
             gl, gv, pg = (list(v) + [None, None, None])[:3]
             reales[int(num)] = ResultadoPlayoff(int(num), gl, gv, pg)
-        if j.get('total_rojas') is not None:
+        if rojas is None and j.get('total_rojas') is not None:
             rojas = j['total_rojas']
-        if j.get('total_penales') is not None:
+        if penales is None and j.get('total_penales') is not None:
             penales = j['total_penales']
 
     return reales, rojas, penales
