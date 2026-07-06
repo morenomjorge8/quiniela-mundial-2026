@@ -93,8 +93,29 @@
     "total_penales": 0
   },
   "9": {
-    "marcadores": {},
+    "marcadores": {
+      "89": [
+        0,
+        3,
+        "V"
+      ],
+      "90": [
+        0,
+        1,
+        "V"
+      ],
+      "91": [
+        1,
+        2,
+        "V"
+      ],
+      "92": [
+        2,
+        3,
+        "V"
+      ]
+    },
     "total_rojas": null,
-    "total_penales": null
+    "total_penales": 1
   }
 }
